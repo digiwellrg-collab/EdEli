@@ -34,6 +34,8 @@ var CONFIG_INICIAL = [
   ['MULTA_MORA', 0, 'Recargo por pago tardío, se cobra el mes siguiente. "10000" = valor fijo; "2%" = % de lo vencido. 0 = sin recargo.'],
   ['MULTA_DESDE', '', 'Primer mes (AAAA-MM) en que se aplica el recargo. Vacío = no se aplica.'],
   ['CONSULTA_BANCO', 'from:notificacionesbancolombia.com', 'Búsqueda de Gmail para las alertas de Bancolombia.'],
+  ['BANCO_DESDE', '2026-10-01', 'Fecha (AAAA-MM-DD) desde la que la cuenta recibe pagos del edificio. Alertas anteriores se ignoran.'],
+  ['BANCO_MONTO_MAX', 2000000, 'Alertas por encima de este valor se ignoran (no son cuotas). Vacío = sin límite.'],
   ['DIAS_CONCILIACION', 5, 'Días de diferencia máximos entre el soporte y la alerta del banco para emparejarlos.'],
   ['DESTINATARIOS_INFORME', '', 'Correos (separados por coma) que reciben el informe mensual.'],
   ['CARPETA_DRIVE_ID', '', 'Lo llena la configuración inicial: carpeta raíz en Google Drive.']

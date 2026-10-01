@@ -75,6 +75,8 @@ function getConfig_() {
   cfg.VALOR_ASEO = parseCOP_(cfg.VALOR_ASEO) || 0;
   cfg.DIAS_ANTES_FIN_MES = Number(cfg.DIAS_ANTES_FIN_MES) || 0;
   cfg.DIAS_CONCILIACION = Number(cfg.DIAS_CONCILIACION) || 5;
+  cfg.BANCO_DESDE = aFecha_(cfg.BANCO_DESDE);
+  cfg.BANCO_MONTO_MAX = parseCOP_(cfg.BANCO_MONTO_MAX) || 0;
   cfg.MULTA_DESDE = normalizarMes_(cfg.MULTA_DESDE) || '';
   cfg.MULTA_MORA = String(cfg.MULTA_MORA || '').trim();
   return cfg;

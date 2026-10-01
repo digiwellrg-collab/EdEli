@@ -15,13 +15,16 @@ function procesarBanco_() {
   var lbl = etiqueta_(LABELS.BANCO_OK);
   var vistos = idsRegistrados_(HOJAS.BANCO);
   var aptoPorNombre = mapaNombreBancoApto_();
-  var q = cfg.CONSULTA_BANCO + ' -label:"' + LABELS.BANCO_OK + '" after:' + cfg.MES_INICIO.replace('-', '/') + '/01';
+  var desde = cfg.BANCO_DESDE ? Utilities.formatDate(cfg.BANCO_DESDE, TZ, 'yyyy/MM/dd') : cfg.MES_INICIO.replace('-', '/') + '/01';
+  var q = cfg.CONSULTA_BANCO + ' -label:"' + LABELS.BANCO_OK + '" after:' + desde;
 
   GmailApp.search(q, 0, 100).forEach(function (thread) {
     thread.getMessages().forEach(function (msg) {
       if (vistos[msg.getId()]) return;
       var a = parseAlertaBancolombia_(msg.getSubject() + ' ' + msg.getPlainBody());
       if (!a.ingreso || !a.valor) return;
+      if (cfg.BANCO_DESDE && msg.getDate() < cfg.BANCO_DESDE) return;
+      if (cfg.BANCO_MONTO_MAX && a.valor > cfg.BANCO_MONTO_MAX) return;
       agregarFila_(HOJAS.BANCO, {
         'Fecha': msg.getDate(),
         'Valor': a.valor,
