@@ -129,20 +129,32 @@ function aFecha_(v) {
 /**
  * Fees by coefficient (Reglamento art. 19.11): the monthly budget is
  * base x number of apartments, split by each apartment's coefficient (%).
- * aptos: [{apto, coef}] with coef like 12.95. Returns [{apto, valor, nota}].
+ * aptos: [{apto, coef, codigo}] with coef like 12.95. When an apartment has a
+ * payment code (1-9), its fee's last digit is replaced by that code so a bank
+ * deposit identifies the apartment by amount alone. Returns [{apto, valor, nota}].
  */
 function calcularCuotas_(base, aptos) {
   var n = aptos.length;
   var presupuesto = base * n;
   return aptos.map(function (a) {
-    var valor = Math.round(presupuesto * a.coef / 100);
+    var exacto = Math.round(presupuesto * a.coef / 100);
+    var valor = a.codigo ? Math.floor(exacto / 10) * 10 + Number(a.codigo) : exacto;
     return {
       apto: a.apto,
       valor: valor,
       nota: formatoCOP_(base) + ' × ' + n + ' = ' + formatoCOP_(presupuesto) + ' × ' +
-        String(a.coef).replace('.', ',') + '% = ' + formatoCOP_(valor)
+        String(a.coef).replace('.', ',') + '% = ' + formatoCOP_(exacto) +
+        (a.codigo ? ' → termina en ' + a.codigo + ' (código del apto): ' + formatoCOP_(valor) : '')
     };
   });
+}
+
+/** Apartment whose fee (any period) is exactly this amount, or '' if none / ambiguous. */
+function aptoPorValor_(valor, cuotas) {
+  var aptos = {};
+  cuotas.forEach(function (c) { if (c.valor === valor) aptos[c.apto] = true; });
+  var lista = Object.keys(aptos);
+  return lista.length === 1 ? lista[0] : '';
 }
 
 /** Coefficient cell -> number: 12.95, "12,95", "12,95%" or 0.1295 (a % formatted cell). */

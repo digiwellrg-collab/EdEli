@@ -8,7 +8,9 @@ Buenos días, vecinos. Para llevar las cuentas del edificio de forma clara y que
 podamos ver el estado de ingresos y gastos, desde ahora cada pago de administración se
 registra así:
 
-1. Haga su pago como de costumbre.
+1. Transfiera **el valor exacto** de su cuota, sin redondear (está en la pestaña
+   Instrucciones de la hoja). El último dígito identifica su apartamento, así el pago
+   se registra solo. **Una transferencia por mes.**
 2. Envíe **un correo por cada mes pagado** a **juglic.co@gmail.com** con:
    - **Asunto:** `Soporte | Apto 401 | 2026-02 | 120000`
      (su número de apartamento, el mes que paga en formato año-mes, y el valor sin puntos)

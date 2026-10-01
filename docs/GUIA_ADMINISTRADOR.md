@@ -114,9 +114,14 @@ carpeta `Informes`. No les dé permiso de edición.
 3. Cada hora, cada soporte `Pendiente verificación` se empareja con un movimiento del
    banco del **mismo valor** y fecha cercana (`DIAS_CONCILIACION`). Si lo encuentra, el pago
    pasa solo a **Verificado** y el movimiento a **Conciliado**.
-4. Movimientos `Sin soporte` = alguien pagó y no envió el correo. Si en Apartamentos llena
+4. **Código de pago**: cada apartamento tiene un código del 1 al 9 (columna `Código pago` en
+   Apartamentos) y su cuota termina en ese dígito (101 → $139.861, 201 → $136.082...). Una
+   alerta del banco por el valor exacto de una cuota crea sola el pago `Verificado`, aplicado
+   al mes más antiguo pendiente de ese apartamento. Si después llega el soporte, se adjunta a
+   ese pago (no se duplica).
+5. Movimientos `Sin soporte` = alguien pagó un valor que no corresponde a ninguna cuota y no envió el correo. Si en Apartamentos llena
    **Nombre en banco** (como aparece en la alerta), el sistema sugiere el apartamento.
-5. Movimientos que no son del edificio: márquelos `No es del edificio`.
+6. Movimientos que no son del edificio: márquelos `No es del edificio`.
 
 > Si las alertas no se reconocen (la pestaña Banco queda vacía), reenvíe una alerta de
 > ejemplo para ajustar `CONSULTA_BANCO` o el lector de alertas.

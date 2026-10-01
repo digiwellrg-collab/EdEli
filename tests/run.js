@@ -93,6 +93,44 @@ test('fees by coefficient: 120k x 9 x coef', () => {
   assert.strictEqual(ctx.parseCoef_(''), null);
 });
 
+test('payment codes make every fee unique', () => {
+  const coef = { '101': 12.95, '201': 12.6, '202': 10.77, '203': 9.33, '301': 12.6, '302': 10.77, '303': 9.33, '401': 9.33, '402': 12.33 };
+  const aptos = Object.entries(coef).map(([apto, c], i) => ({ apto, coef: c, codigo: i + 1 }));
+  const r = ctx.calcularCuotas_(120000, aptos);
+  const v = Object.fromEntries(r.map((x) => [x.apto, x.valor]));
+  assert.strictEqual(JSON.stringify(v), JSON.stringify({ '101': 139861, '201': 136082, '202': 116313, '203': 100764, '301': 136085, '302': 116316, '303': 100767, '401': 100768, '402': 133169 }));
+  assert.strictEqual(new Set(Object.values(v)).size, 9);
+  r.forEach((x, i) => assert.strictEqual(x.valor % 10, i + 1));
+  assert.ok(r[0].nota.endsWith('$139.860 → termina en 1 (código del apto): $139.861'));
+  const cuotas = r.map((x) => ({ apto: x.apto, valor: x.valor }));
+  assert.strictEqual(ctx.aptoPorValor_(100767, cuotas), '303');
+  assert.strictEqual(ctx.aptoPorValor_(100764, cuotas), '203');
+  assert.strictEqual(ctx.aptoPorValor_(100000, cuotas), '');
+});
+
+test('bank deposit goes to the oldest unpaid month', () => {
+  const cuenta = { celdas: [
+    { mes: '2026-08', cuota: 100, pagado: 100, conSoporte: 0 },
+    { mes: '2026-09', cuota: 100, pagado: 0, conSoporte: 0 },
+    { mes: '2026-10', cuota: 100, pagado: 0, conSoporte: 0 }
+  ] };
+  assert.strictEqual(ctx.mesPendiente_(cuenta, '2026-10', {}), '2026-09');
+  assert.strictEqual(ctx.mesPendiente_(cuenta, '2026-10', { '2026-09': 100 }), '2026-10');
+  assert.strictEqual(ctx.mesPendiente_(cuenta, '2026-10', { '2026-09': 100, '2026-10': 100 }), '2026-11');
+  cuenta.celdas[1].conSoporte = 100;
+  assert.strictEqual(ctx.mesPendiente_(cuenta, '2026-10', {}), '2026-10');
+});
+
+test('late soporte attaches to the bank-created payment', () => {
+  const pagos = [
+    { _fila: 2, Apto: '101', 'Fecha pago': d('2026-10-20'), Valor: 139861, Estado: 'Verificado', Soporte: 'Alerta Bancolombia', Notas: 'Creado desde alerta Bancolombia (x).' },
+    { _fila: 3, Apto: '101', 'Fecha pago': d('2026-10-21'), Valor: 139861, Estado: 'Pendiente verificación', Soporte: 'https://drive/x' },
+    { _fila: 4, Apto: '201', 'Fecha pago': d('2026-10-21'), Valor: 136082, Estado: 'Pendiente verificación', Soporte: 'https://drive/y' }
+  ];
+  const r = ctx.emparejarDuplicados_(pagos, 5).map((x) => [x.soporte._fila, x.pago._fila]);
+  assert.strictEqual(JSON.stringify(r), JSON.stringify([[3, 2]]));
+});
+
 // ---- Bancolombia alerts & reconciliation ----
 test('Bancolombia incoming alerts', () => {
   let a = ctx.parseAlertaBancolombia_('Bancolombia: Recibiste una transferencia por $120,000 de JUAN PEREZ en tu cuenta **1234, el 24/02/2026 a las 12:22');

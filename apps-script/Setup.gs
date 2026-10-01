@@ -6,7 +6,7 @@
 function encabezados_(nombre) {
   var h = {};
   h[HOJAS.CONFIG] = ['Clave', 'Valor', 'Descripción'];
-  h[HOJAS.APTOS] = ['Apto', 'Propietario', 'Emails', 'Coeficiente (%)', 'Saldo anterior', 'Activo', 'Nombre en banco'];
+  h[HOJAS.APTOS] = ['Apto', 'Propietario', 'Emails', 'Coeficiente (%)', 'Saldo anterior', 'Activo', 'Nombre en banco', 'Código pago'];
   h[HOJAS.CUOTAS] = ['Apto', 'Desde', 'Cuota mensual', 'Notas'];
   h[HOJAS.PAGOS] = ['Fecha registro', 'Fecha pago', 'Apto', 'Mes aplicado', 'Valor', 'Tipo',
     'Método', 'Soporte', 'Remitente', 'Estado', 'Notas', 'Gmail ID'];
@@ -213,9 +213,20 @@ function escribirCuotasCoeficiente_(desde) {
   var cfg = getConfig_();
   var base = parseCOP_(cfg.CUOTA_BASE);
   if (!base) throw new Error('Falta CUOTA_BASE en Config.');
-  var aptos = leerTabla_(HOJAS.APTOS).filas
-    .filter(function (f) { return f['Apto'] !== ''; })
-    .map(function (f) { return { apto: String(f['Apto']), coef: parseCoef_(f['Coeficiente (%)']) }; });
+  var tablaAptos = leerTabla_(HOJAS.APTOS);
+  var filasAptos = tablaAptos.filas.filter(function (f) { return f['Apto'] !== ''; })
+    .sort(function (a, b) { return String(a['Apto']) < String(b['Apto']) ? -1 : 1; });
+  // Payment codes 1-9 (last digit of the fee). Missing ones are assigned in apartment order.
+  var colCodigo = tablaAptos.headers.indexOf('Código pago') + 1;
+  if (colCodigo && filasAptos.length <= 9 && filasAptos.some(function (f) { return !f['Código pago']; })) {
+    filasAptos.forEach(function (f, i) {
+      f['Código pago'] = i + 1;
+      tablaAptos.hoja.getRange(f._fila, colCodigo).setValue(i + 1);
+    });
+  }
+  var aptos = filasAptos.map(function (f) {
+    return { apto: String(f['Apto']), coef: parseCoef_(f['Coeficiente (%)']), codigo: Number(f['Código pago']) || 0 };
+  });
   var sinCoef = aptos.filter(function (a) { return !a.coef; }).map(function (a) { return a.apto; });
   if (sinCoef.length) throw new Error('Falta el coeficiente de: ' + sinCoef.join(', ') + ' (hoja Apartamentos).');
   var suma = aptos.reduce(function (s, a) { return s + a.coef; }, 0);

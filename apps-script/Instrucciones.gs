@@ -44,6 +44,7 @@ function actualizarInstrucciones() {
 
   seccion('2. Dónde pagar');
   linea('Cuenta', String(cfg.CUENTA_PAGO || ''));
+  linea('Valor exacto', 'Transfiera el valor EXACTO de su cuota (tabla abajo), sin redondear: el último dígito identifica su apartamento. Una transferencia por mes.');
   linea('Descripción', 'En la descripción o referencia de la transferencia escriba: Apto ### AAAA-MM  (ej.: Apto 401 ' + mes + ')');
 
   seccion('3. Enviar el soporte (obligatorio)');
@@ -53,7 +54,7 @@ function actualizarInstrucciones() {
   linea('Importante', 'Un correo por cada mes pagado. Si paga dos meses, envíe dos correos (puede adjuntar el mismo comprobante).');
 
   seccion('Asunto listo para copiar (' + nombreMes_(mes) + ')');
-  encabezado('Apto', 'Asunto', 'Cuota');
+  encabezado('Apto', 'Asunto', 'Valor exacto a transferir');
   cuotas.forEach(function (c) {
     linea(c.apto, 'Soporte | Apto ' + c.apto + ' | ' + mes + ' | ' + (c.valor || 'valor'), c.valor ? formatoCOP_(c.valor) : 'por definir');
   });
