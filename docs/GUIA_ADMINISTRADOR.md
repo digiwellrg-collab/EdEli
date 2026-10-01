@@ -43,7 +43,7 @@ de Gmail `EdEli/...` y dos tareas automáticas:
 
 | Pestaña | Qué llenar |
 |---|---|
-| **Apartamentos** | Los 9 apartamentos (vienen 7 precargados: 201, 202, 301, 302, 303, 401, 402; agregue los que faltan), propietario, correo(s) desde los que envía soportes, coeficiente, y **Saldo anterior** (lo que debía al 1 de octubre de 2025; negativo si tenía saldo a favor). |
+| **Apartamentos** | Los 9 apartamentos (101, 201, 202, 203, 301, 302, 303, 401, 402), propietario, correo(s) desde los que envía soportes, coeficiente, y **Saldo anterior** (lo que debía al 1 de octubre de 2025; negativo si tenía saldo a favor). |
 | **Cuotas** | La cuota mensual de cada apartamento y desde qué mes aplica. Si la asamblea cambia la cuota, **agregue una fila nueva** con el nuevo valor y el mes `Desde`; no borre la anterior, así el histórico queda correcto. |
 | **Config** | `SALDO_INICIAL` (dinero del edificio al 1 de octubre de 2025), `VALOR_ASEO`, `PROVEEDOR_ASEO`, `DESTINATARIOS_INFORME`. |
 | **Pagos** | Pagos de octubre 2025 a hoy que ya ocurrieron (a mano, ver abajo). |
@@ -63,7 +63,9 @@ de Gmail `EdEli/...` y dos tareas automáticas:
 4. **Pagos en efectivo**: agregue la fila a mano con `Método = Efectivo`, y en `Soporte`
    el link a la foto del recibo firmado.
 5. Si un pago cubre varios meses, divídalo en una fila por mes (`Mes aplicado`).
-6. Cuotas extraordinarias o aportes: cambie `Tipo` (no cuentan como cuota ordinaria en el
+6. **Arriendo de parqueadero** (p. ej. Sr. César): fila en Pagos con `Tipo = Arriendo parqueadero`
+   y en `Apto` escriba `PARQ`. Cuenta como ingreso del edificio, no en el estado de cuenta.
+7. Cuotas extraordinarias o aportes: cambie `Tipo` (no cuentan como cuota ordinaria en el
    estado de cuenta, pero sí como ingreso del edificio).
 
 ### Gastos

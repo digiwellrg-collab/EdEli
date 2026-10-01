@@ -32,6 +32,7 @@ var TIPO_PAGO = {
   ORDINARIA: 'Cuota ordinaria',
   EXTRAORDINARIA: 'Cuota extraordinaria',
   APORTE: 'Aporte voluntario',
+  PARQUEADERO: 'Arriendo parqueadero',
   OTRO: 'Otro ingreso'
 };
 

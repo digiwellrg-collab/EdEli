@@ -30,7 +30,7 @@ var CONFIG_INICIAL = [
   ['CARPETA_DRIVE_ID', '', 'Lo llena la configuración inicial: carpeta raíz en Google Drive.']
 ];
 
-var APTOS_CONOCIDOS = ['201', '202', '301', '302', '303', '401', '402'];
+var APTOS_CONOCIDOS = ['101', '201', '202', '203', '301', '302', '303', '401', '402'];
 
 function configuracionInicial() {
   var ss = SpreadsheetApp.getActive();
