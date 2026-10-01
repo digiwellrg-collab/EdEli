@@ -56,7 +56,7 @@ function configuracionInicial() {
     sh.getRange(1, 1, 1, h.length).setValues([h]).setFontWeight('bold').setBackground('#e8eaed');
     sh.setFrozenRows(1);
   });
-  [HOJAS.INSTRUCCIONES, HOJAS.RESUMEN, HOJAS.ESTADO].forEach(function (nombre) {
+  [HOJAS.INSTRUCCIONES, HOJAS.RESUMEN, HOJAS.ESTADO, HOJAS.HISTORIAL].forEach(function (nombre) {
     if (!ss.getSheetByName(nombre)) ss.insertSheet(nombre);
   });
   var hoja1 = ss.getSheetByName('Hoja 1') || ss.getSheetByName('Sheet1') || ss.getSheetByName('Hoja1');
@@ -148,7 +148,7 @@ function aplicarFormatos_() {
 
   colorearEstado_(pagos, 'J2:J', [
     [ESTADO_PAGO.VERIFICADO, '#d9ead3'], [ESTADO_PAGO.PENDIENTE, '#fff2cc'],
-    [ESTADO_PAGO.REVISAR, '#f4cccc'], [ESTADO_PAGO.RECHAZADO, '#cccccc']]);
+    [ESTADO_PAGO.REVISAR, '#f4cccc'], [ESTADO_PAGO.DECLARADO, '#fce5cd'], [ESTADO_PAGO.RECHAZADO, '#cccccc']]);
   colorearEstado_(gastos, 'J2:J', [
     [ESTADO_GASTO.PAGADO, '#d9ead3'], [ESTADO_GASTO.POR_PAGAR, '#fff2cc'],
     [ESTADO_GASTO.REVISAR, '#f4cccc'], [ESTADO_GASTO.ANULADO, '#cccccc']]);

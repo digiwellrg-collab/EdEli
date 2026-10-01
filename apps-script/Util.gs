@@ -12,6 +12,7 @@ var HOJAS = {
   GASTOS: 'Gastos',
   RESUMEN: 'Resumen',
   ESTADO: 'Estado de cuenta',
+  HISTORIAL: 'Historial de pagos',
   BANCO: 'Banco',
   INSTRUCCIONES: 'Instrucciones'
 };
@@ -20,6 +21,7 @@ var ESTADO_PAGO = {
   PENDIENTE: 'Pendiente verificación',
   REVISAR: 'Revisar',
   VERIFICADO: 'Verificado',
+  DECLARADO: 'Declarado (sin soporte)',
   RECHAZADO: 'Rechazado'
 };
 

@@ -76,7 +76,7 @@ function calcularFinanzas_(mesFin) {
       gastos: totalGastos,
       saldoFinal: saldo + ingCuotas + ingOtros - totalGastos,
       porVerificar: suma_(pagos.filter(function (p) {
-        return (p.estado === ESTADO_PAGO.PENDIENTE || p.estado === ESTADO_PAGO.REVISAR) && p.mesCaja === mes;
+        return porVerificar_(p.estado) && p.mesCaja === mes;
       })),
       porPagar: suma_(gastos.filter(function (g) {
         return (g.estado === ESTADO_GASTO.POR_PAGAR || g.estado === ESTADO_GASTO.REVISAR) && g.mes === mes;
@@ -99,7 +99,17 @@ function calcularFinanzas_(mesFin) {
         return p.apto === a.apto && p.mesAplicado === mes && p.tipo === TIPO_PAGO.MULTA &&
           p.estado === ESTADO_PAGO.VERIFICADO;
       }));
-      return { mes: mes, cuota: cuotaDe(a.apto, mes), pagado: pagado, multa: 0, pagadoMulta: pagadoMulta };
+      var delMes = function (estados) {
+        return suma_(pagos.filter(function (p) {
+          return p.apto === a.apto && p.mesAplicado === mes && p.tipo === TIPO_PAGO.ORDINARIA &&
+            estados.indexOf(p.estado) >= 0;
+        }));
+      };
+      return {
+        mes: mes, cuota: cuotaDe(a.apto, mes), pagado: pagado, multa: 0, pagadoMulta: pagadoMulta,
+        conSoporte: delMes([ESTADO_PAGO.PENDIENTE, ESTADO_PAGO.REVISAR]),
+        declarado: delMes([ESTADO_PAGO.DECLARADO])
+      };
     });
     // Late fee: dues for a month not fully paid (verified) by its deadline are
     // charged a fee on the following month.
@@ -122,12 +132,17 @@ function calcularFinanzas_(mesFin) {
         p.estado === ESTADO_PAGO.VERIFICADO;
     }));
     var pendiente = suma_(pagos.filter(function (p) {
-      return p.apto === a.apto && (p.estado === ESTADO_PAGO.PENDIENTE || p.estado === ESTADO_PAGO.REVISAR);
+      return p.apto === a.apto && porVerificar_(p.estado);
     }));
     return { apto: a.apto, propietario: a.propietario, saldoAnterior: a.saldoAnterior, celdas: celdas, otros: otros, pendiente: pendiente };
   });
 
   return { cfg: cfg, meses: meses, porMes: porMes, cuentas: cuentas, cuotaDe: cuotaDe, pagos: pagos, gastos: gastos };
+}
+
+/** Money reported but not yet verified: soporte pending/to review, or declared without proof. */
+function porVerificar_(estado) {
+  return estado === ESTADO_PAGO.PENDIENTE || estado === ESTADO_PAGO.REVISAR || estado === ESTADO_PAGO.DECLARADO;
 }
 
 function suma_(lista) {
@@ -201,10 +216,89 @@ function actualizarResumen() {
   }
   est.setFrozenRows(1);
   est.setFrozenColumns(2);
+  actualizarHistorial_(f);
   est.getRange(filas2.length + 3, 1).setValue(
     'Cada mes muestra lo pagado (verificado) de cuota ordinaria aplicado a ese mes. ' +
     'Verde = completo, amarillo = parcial, rojo = sin pago. "Debe a hoy" = saldo anterior + cuotas + recargos hasta este mes - pagos.');
   return f;
+}
+
+/**
+ * "Historial de pagos": apartment x month since MES_INICIO showing the level of
+ * evidence for each payment, for reviewing the history with the owners:
+ *   ✅ verified (bank or accepted proof)  📎 soporte received, not yet verified
+ *   🗣 declared without proof              ✗ nothing reported
+ */
+function actualizarHistorial_(f) {
+  var sh = SpreadsheetApp.getActive().getSheetByName(HOJAS.HISTORIAL);
+  if (!sh) return;
+  sh.clear();
+  sh.clearConditionalFormatRules();
+  var hoy = mesDe_(new Date());
+  var meses = f.meses.filter(function (m) { return m <= hoy; });
+  var enc = ['Apto', 'Propietario', 'Debía antes de ' + f.cfg.MES_INICIO].concat(meses)
+    .concat(['Cuotas a hoy', '✅ Verificado', '📎 Soporte por verificar', '🗣 Declarado sin soporte',
+      'Debe (solo verificado)', 'Debe (si se acepta todo lo reportado)']);
+  var filas = [];
+  var fondos = [];
+  f.cuentas.forEach(function (c) {
+    var t = { cuota: 0, ver: 0, sop: 0, dec: 0 };
+    var celdas = [];
+    var colores = [];
+    c.celdas.forEach(function (x) {
+      if (x.mes > hoy) return;
+      t.cuota += x.cuota + x.multa;
+      t.ver += x.pagado + x.pagadoMulta;
+      t.sop += x.conSoporte;
+      t.dec += x.declarado;
+      var partes = [];
+      if (x.pagado) partes.push('✅ ' + formatoCOP_(x.pagado));
+      if (x.conSoporte) partes.push('📎 ' + formatoCOP_(x.conSoporte));
+      if (x.declarado) partes.push('🗣 ' + formatoCOP_(x.declarado));
+      celdas.push(partes.length ? partes.join('\n') : (x.cuota > 0 ? '✗' : ''));
+      var color = null;
+      if (x.cuota > 0) {
+        if (x.pagado >= x.cuota) color = '#d9ead3';
+        else if (x.pagado + x.conSoporte >= x.cuota) color = '#cfe2f3';
+        else if (x.pagado + x.conSoporte + x.declarado >= x.cuota) color = '#fce5cd';
+        else if (partes.length) color = '#fff2cc';
+        else color = '#f4cccc';
+      }
+      colores.push(color);
+    });
+    var debeVer = c.saldoAnterior + t.cuota - t.ver;
+    filas.push([c.apto, c.propietario, c.saldoAnterior].concat(celdas)
+      .concat([t.cuota, t.ver, t.sop, t.dec, debeVer, debeVer - t.sop - t.dec]));
+    fondos.push(colores);
+  });
+
+  sh.getRange(1, 1, 1, enc.length).setValues([enc]).setFontWeight('bold').setBackground('#e8eaed')
+    .setWrap(true).setVerticalAlignment('middle');
+  sh.getRange(1, 4, 1, meses.length).setNumberFormat('@').setValues([meses]);
+  if (filas.length) {
+    sh.getRange(2, 1, filas.length, 1).setNumberFormat('@');
+    sh.getRange(2, 1, filas.length, enc.length).setValues(filas).setVerticalAlignment('middle');
+    sh.getRange(2, 3, filas.length, 1).setNumberFormat('$#,##0;[Red]-$#,##0');
+    sh.getRange(2, 4 + meses.length, filas.length, 6).setNumberFormat('$#,##0;[Red]-$#,##0');
+    sh.getRange(2, 4, filas.length, meses.length).setBackgrounds(fondos).setWrap(true)
+      .setHorizontalAlignment('center').setFontSize(9);
+    sh.getRange(2, enc.length - 1, filas.length, 2).setFontWeight('bold');
+  }
+  sh.setColumnWidths(4, meses.length, 95);
+  sh.setFrozenRows(1);
+  sh.setFrozenColumns(2);
+
+  var ley = filas.length + 3;
+  sh.getRange(ley, 1, 7, 2).setValues([
+    ['Leyenda', ''],
+    ['✅ Verificado', 'Pago confirmado en el banco o con soporte aceptado.'],
+    ['📎 Soporte', 'El propietario envió soporte; falta verificarlo.'],
+    ['🗣 Declarado', 'Alguien dice que se pagó, pero no hay soporte.'],
+    ['✗', 'No hay ningún pago reportado para ese mes.'],
+    ['Colores', 'Verde = verificado completo · Azul = completo con soporte · Naranja = completo solo con lo declarado · Amarillo = parcial · Rojo = nada.'],
+    ['Actualizado', Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd HH:mm')]
+  ]);
+  sh.getRange(ley, 1, 7, 1).setFontWeight('bold');
 }
 
 /** Builds the report for one month as a Google Doc + PDF in Drive/Informes/<año>. */

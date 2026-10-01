@@ -19,6 +19,7 @@ Funciona con una **Google Sheet + Google Apps Script**: no requiere servidor ni 
 |---|---|
 | [`apps-script/`](apps-script) | Código para pegar en Extensiones ▸ Apps Script de la hoja. |
 | [`docs/GUIA_ADMINISTRADOR.md`](docs/GUIA_ADMINISTRADOR.md) | Instalación, flujo mensual y cambio de administrador/correo. |
+| [`docs/RECONSTRUCCION_HISTORIAL.md`](docs/RECONSTRUCCION_HISTORIAL.md) | Cómo reconstruir los pagos desde octubre 2025 para la asamblea. |
 | [`docs/INSTRUCCIONES_PROPIETARIOS.md`](docs/INSTRUCCIONES_PROPIETARIOS.md) | Mensaje para enviar a los propietarios. |
 | [`tests/`](tests) | Pruebas (`node tests/run.js`). |
 | `Administracion/` | Documentos de referencia del edificio. |

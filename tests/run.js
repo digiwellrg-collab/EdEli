@@ -203,4 +203,17 @@ test('late fee charged the following month', () => {
   tablas.Pagos.pop();
 });
 
+test('history levels: verified, soporte, declared', () => {
+  ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0 });
+  tablas.Pagos.push(
+    { Apto: '401', 'Mes aplicado': '2025-12', 'Fecha pago': d('2025-12-10'), Valor: 100000, Tipo: 'Cuota ordinaria', Estado: 'Declarado (sin soporte)' });
+  const f = ctx.calcularFinanzas_('2025-12');
+  const cel = (a, m) => f.cuentas.find((c) => c.apto === a).celdas.find((x) => x.mes === m);
+  assert.strictEqual(cel('402', '2025-11').conSoporte, 120000);
+  assert.strictEqual(cel('401', '2025-12').declarado, 100000);
+  assert.strictEqual(cel('401', '2025-12').pagado, 0);
+  assert.strictEqual(f.cuentas.find((c) => c.apto === '401').pendiente, 100000);
+  tablas.Pagos.pop();
+});
+
 console.log(`\n${pass} passed`);
