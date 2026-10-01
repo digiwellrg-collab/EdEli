@@ -111,6 +111,12 @@ test('real Bancolombia alert format', () => {
   assert.deepStrictEqual({ ...a }, { ingreso: true, valor: 1000000, remitente: 'ALEJANDRO GOMEZ' });
 });
 
+test('alert text drops image links', () => {
+  const t = ctx.textoAlerta_('Alertas y Notificaciones Logo Bancolombia [https://x.s3.amazonaws.com/a.png] yellow-icon [https://x/b.png] ¡Listo! Todo salió bien con tus movimientos Bancolombia: Recibiste una transferencia por $2,500,000.00 de ALEJANDRO GOMEZ en tu cuenta **3111');
+  assert.strictEqual(t, 'Bancolombia: Recibiste una transferencia por $2,500,000.00 de ALEJANDRO GOMEZ en tu cuenta **3111');
+  assert.strictEqual(ctx.parseAlertaBancolombia_(t).valor, 2500000);
+});
+
 test('Bancolombia outgoing alerts are ignored', () => {
   assert.strictEqual(ctx.parseAlertaBancolombia_('Bancolombia: Compraste $50.000 en EXITO con tu T.Deb *1234').ingreso, false);
   assert.strictEqual(ctx.parseAlertaBancolombia_('Bancolombia: Transferiste $120,000 a la cuenta *9876').ingreso, false);

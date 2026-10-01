@@ -32,7 +32,7 @@ function procesarBanco_() {
         'Apto sugerido': aptoPorNombre[normalizarTexto_(a.remitente)] || '',
         'Estado': ESTADO_BANCO.SIN_SOPORTE,
         'Pago vinculado': '',
-        'Texto alerta': (msg.getSubject() + ' | ' + msg.getPlainBody()).replace(/\s+/g, ' ').slice(0, 300),
+        'Texto alerta': textoAlerta_(msg.getPlainBody()),
         'Gmail ID': msg.getId()
       });
       vistos[msg.getId()] = true;
@@ -42,6 +42,13 @@ function procesarBanco_() {
   });
   res.verificados = conciliar_();
   return res;
+}
+
+/** The meaningful sentence of an alert ("Bancolombia: Recibiste ..."), without image links. */
+function textoAlerta_(cuerpo) {
+  var t = String(cuerpo || '').replace(/\[[^\]]*\]/g, ' ').replace(/https?:\/\/\S+/g, ' ').replace(/\s+/g, ' ');
+  var i = t.search(/Bancolombia:|Recibiste|Te transfirieron|Consignaci/i);
+  return (i >= 0 ? t.slice(i) : t).trim().slice(0, 250);
 }
 
 /** Links pending soportes to bank deposits; returns how many were verified. */
