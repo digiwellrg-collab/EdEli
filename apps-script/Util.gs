@@ -124,6 +124,33 @@ function aFecha_(v) {
   return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12) : null;
 }
 
+/**
+ * Fees by coefficient (Reglamento art. 19.11): the monthly budget is
+ * base x number of apartments, split by each apartment's coefficient (%).
+ * aptos: [{apto, coef}] with coef like 12.95. Returns [{apto, valor, nota}].
+ */
+function calcularCuotas_(base, aptos) {
+  var n = aptos.length;
+  var presupuesto = base * n;
+  return aptos.map(function (a) {
+    var valor = Math.round(presupuesto * a.coef / 100);
+    return {
+      apto: a.apto,
+      valor: valor,
+      nota: formatoCOP_(base) + ' × ' + n + ' = ' + formatoCOP_(presupuesto) + ' × ' +
+        String(a.coef).replace('.', ',') + '% = ' + formatoCOP_(valor)
+    };
+  });
+}
+
+/** Coefficient cell -> number: 12.95, "12,95", "12,95%" or 0.1295 (a % formatted cell). */
+function parseCoef_(v) {
+  if (v === '' || v === null || v === undefined) return null;
+  var n = typeof v === 'number' ? v : Number(String(v).replace('%', '').replace(',', '.').trim());
+  if (!isFinite(n) || n <= 0) return null;
+  return n < 1 ? Math.round(n * 10000) / 100 : n;
+}
+
 /** Late fee: "10000" = fixed amount; "2%" = percent of the unpaid amount. */
 function calcularMulta_(regla, saldoVencido) {
   if (!regla || saldoVencido <= 0) return 0;

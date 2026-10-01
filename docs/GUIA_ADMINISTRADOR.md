@@ -59,7 +59,7 @@ y `clasp login` con la cuenta dueña de la hoja. Si PowerShell bloquea `clasp`:
 | Pestaña | Qué llenar |
 |---|---|
 | **Apartamentos** | Los 9 apartamentos (101, 201, 202, 203, 301, 302, 303, 401, 402), propietario, correo(s) desde los que envía soportes, coeficiente, y **Saldo anterior** (lo que debía al 1 de octubre de 2025; negativo si tenía saldo a favor). |
-| **Cuotas** | La cuota mensual de cada apartamento y desde qué mes aplica. Si la asamblea cambia la cuota, **agregue una fila nueva** con el nuevo valor y el mes `Desde`; no borre la anterior, así el histórico queda correcto. |
+| **Cuotas** | Se calcula sola: `CUOTA_BASE` (Config) × nº de apartamentos × coeficiente de cada uno (Reglamento art. 19.11). Si la asamblea aprueba otra cuota base, cambie `CUOTA_BASE` y use **EdEli ▸ Calcular cuotas por coeficiente** con el mes desde el que aplica: agrega filas nuevas y conserva el histórico. |
 | **Config** | `SALDO_INICIAL` (dinero del edificio al 1 de octubre de 2025), `VALOR_ASEO`, `PROVEEDOR_ASEO`, `DESTINATARIOS_INFORME`. |
 | **Pagos** | Pagos de octubre 2025 a hoy que ya ocurrieron (a mano, ver abajo). |
 | **Gastos** | Facturas de luz, agua, aseo y reparaciones de octubre 2025 a hoy. |

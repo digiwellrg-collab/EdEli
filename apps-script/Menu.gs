@@ -11,6 +11,7 @@ function onOpen() {
     .addItem('Generar informe de un mes…', 'menuGenerarInforme')
     .addItem('Enviar informe por correo…', 'menuEnviarInforme')
     .addSeparator()
+    .addItem('Calcular cuotas por coeficiente…', 'menuCalcularCuotas')
     .addItem('Actualizar instrucciones', 'actualizarInstrucciones')
     .addItem('Configuración inicial', 'configuracionInicial')
     .addToUi();

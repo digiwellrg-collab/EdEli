@@ -28,6 +28,7 @@ var CONFIG_INICIAL = [
   ['CONSULTA_AFINIA', 'from:afinia has:attachment', 'Búsqueda de Gmail para las facturas de energía.'],
   ['CONSULTA_ACUACAR', 'from:acuacar has:attachment', 'Búsqueda de Gmail para las facturas de agua.'],
   ['ENVIAR_ACUSE', 'NO', 'SI = responder automáticamente al propietario cuando llega su soporte.'],
+  ['CUOTA_BASE', 120000, 'Cuota base aprobada por apartamento. Presupuesto = base × nº apartamentos, repartido por coeficiente (EdEli ▸ Calcular cuotas por coeficiente).'],
   ['CUENTA_PAGO', 'Bancolombia Ahorros No. ____ a nombre de ____', 'Cuenta donde los propietarios pagan (aparece en Instrucciones).'],
   ['DIAS_ANTES_FIN_MES', 5, 'La cuota de cada mes vence este número de días antes del último día del mes.'],
   ['MULTA_MORA', 0, 'Recargo por pago tardío, se cobra el mes siguiente. "10000" = valor fijo; "2%" = % de lo vencido. 0 = sin recargo.'],
@@ -85,6 +86,10 @@ function configuracionInicial() {
   crearCarpetas_();
   crearEtiquetas_();
   instalarDisparadores_();
+  var hayCuotas = leerTabla_(HOJAS.CUOTAS).filas.some(function (f) { return parseCOP_(f['Cuota mensual']); });
+  if (!hayCuotas) {
+    try { escribirCuotasCoeficiente_(getConfig_().MES_INICIO); } catch (e) { /* coefficients not filled in yet */ }
+  }
   actualizarInstrucciones();
 
   SpreadsheetApp.getUi().alert(
@@ -195,4 +200,51 @@ function instalarDisparadores_() {
   });
   ScriptApp.newTrigger('procesarCorreos').timeBased().everyHours(1).create();
   ScriptApp.newTrigger('tareaMensual').timeBased().onMonthDay(1).atHour(7).inTimezone(TZ).create();
+}
+
+/**
+ * Writes one Cuotas row per apartment, from month `desde`, computed by
+ * coefficient. Rows already in Cuotas for that same month are replaced; rows
+ * for other months (history) are kept.
+ */
+function escribirCuotasCoeficiente_(desde) {
+  var cfg = getConfig_();
+  var base = parseCOP_(cfg.CUOTA_BASE);
+  if (!base) throw new Error('Falta CUOTA_BASE en Config.');
+  var aptos = leerTabla_(HOJAS.APTOS).filas
+    .filter(function (f) { return f['Apto'] !== ''; })
+    .map(function (f) { return { apto: String(f['Apto']), coef: parseCoef_(f['Coeficiente (%)']) }; });
+  var sinCoef = aptos.filter(function (a) { return !a.coef; }).map(function (a) { return a.apto; });
+  if (sinCoef.length) throw new Error('Falta el coeficiente de: ' + sinCoef.join(', ') + ' (hoja Apartamentos).');
+  var suma = aptos.reduce(function (s, a) { return s + a.coef; }, 0);
+
+  var sh = hoja_(HOJAS.CUOTAS);
+  var tabla = leerTabla_(HOJAS.CUOTAS);
+  tabla.filas.filter(function (f) { return normalizarMes_(f['Desde']) === desde || !f['Apto']; })
+    .map(function (f) { return f._fila; })
+    .sort(function (a, b) { return b - a; })
+    .forEach(function (fila) { sh.deleteRow(fila); });
+
+  var cuotas = calcularCuotas_(base, aptos.sort(function (a, b) { return a.apto < b.apto ? -1 : 1; }));
+  var inicio = sh.getLastRow() + 1;
+  sh.getRange(inicio, 1, cuotas.length, 2).setNumberFormat('@');
+  sh.getRange(inicio, 1, cuotas.length, 4).setValues(cuotas.map(function (c) {
+    return [c.apto, desde, c.valor, 'Coeficiente: ' + c.nota];
+  }));
+  sh.getRange(inicio, 3, cuotas.length, 1).setNumberFormat('$#,##0');
+  return { cuotas: cuotas, suma: suma, total: cuotas.reduce(function (s, c) { return s + c.valor; }, 0) };
+}
+
+function menuCalcularCuotas() {
+  var ui = SpreadsheetApp.getUi();
+  var cfg = getConfig_();
+  var mes = pedirMes_('Calcular cuotas por coeficiente', cfg.MES_INICIO);
+  if (!mes) return;
+  var r = escribirCuotasCoeficiente_(mes);
+  actualizarInstrucciones();
+  actualizarResumen();
+  ui.alert('Cuotas desde ' + nombreMes_(mes),
+    r.cuotas.map(function (c) { return 'Apto ' + c.apto + ': ' + formatoCOP_(c.valor); }).join('\n') +
+    '\n\nTotal mensual: ' + formatoCOP_(r.total) + ' (suma de coeficientes: ' + String(Math.round(r.suma * 100) / 100).replace('.', ',') + '%)',
+    ui.ButtonSet.OK);
 }

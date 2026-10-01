@@ -78,6 +78,21 @@ test('month helpers', () => {
   assert.strictEqual(ctx.formatoCOP_(-1234567), '-$1.234.567');
 });
 
+test('fees by coefficient: 120k x 9 x coef', () => {
+  const coef = { '101': 12.95, '201': 12.6, '202': 10.77, '203': 9.33, '301': 12.6, '302': 10.77, '303': 9.33, '401': 9.33, '402': 12.33 };
+  const r = ctx.calcularCuotas_(120000, Object.entries(coef).map(([apto, c]) => ({ apto, coef: c })));
+  const v = Object.fromEntries(r.map((x) => [x.apto, x.valor]));
+  assert.strictEqual(v['101'], 139860);
+  assert.strictEqual(v['201'], 136080);
+  assert.strictEqual(v['202'], 116316);
+  assert.strictEqual(v['203'], 100764);
+  assert.strictEqual(v['402'], 133164);
+  assert.strictEqual(r[0].nota, '$120.000 × 9 = $1.080.000 × 12,95% = $139.860');
+  assert.strictEqual(ctx.parseCoef_('12,95'), 12.95);
+  assert.strictEqual(ctx.parseCoef_(0.1295), 12.95);
+  assert.strictEqual(ctx.parseCoef_(''), null);
+});
+
 // ---- Bancolombia alerts & reconciliation ----
 test('Bancolombia incoming alerts', () => {
   let a = ctx.parseAlertaBancolombia_('Bancolombia: Recibiste una transferencia por $120,000 de JUAN PEREZ en tu cuenta **1234, el 24/02/2026 a las 12:22');
