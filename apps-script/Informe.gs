@@ -16,7 +16,10 @@ function calcularFinanzas_(mesFin) {
   var aptos = leerTabla_(HOJAS.APTOS).filas
     .filter(function (f) { return String(f['Activo']).toUpperCase() !== 'NO' && f['Apto'] !== ''; })
     .map(function (f) {
-      return { apto: String(f['Apto']), propietario: f['Propietario'] || '', saldoAnterior: parseCOP_(f['Saldo anterior']) || 0 };
+      return {
+        apto: String(f['Apto']), propietario: f['Propietario'] || '', notas: f['Notas'] || '',
+        saldoAnterior: parseCOP_(f['Saldo anterior']) || 0
+      };
     });
 
   var cuotas = leerTabla_(HOJAS.CUOTAS).filas.map(function (f) {
@@ -92,7 +95,7 @@ function calcularFinanzas_(mesFin) {
   var cuentas = aptos.map(function (a) {
     var celdas = meses.map(function (mes) {
       var pagado = suma_(pagos.filter(function (p) {
-        return p.apto === a.apto && p.mesAplicado === mes && p.tipo === TIPO_PAGO.ORDINARIA &&
+        return p.apto === a.apto && p.mesAplicado === mes && esCuota_(p.tipo) &&
           p.estado === ESTADO_PAGO.VERIFICADO;
       }));
       var pagadoMulta = suma_(pagos.filter(function (p) {
@@ -101,7 +104,7 @@ function calcularFinanzas_(mesFin) {
       }));
       var delMes = function (estados) {
         return suma_(pagos.filter(function (p) {
-          return p.apto === a.apto && p.mesAplicado === mes && p.tipo === TIPO_PAGO.ORDINARIA &&
+          return p.apto === a.apto && p.mesAplicado === mes && esCuota_(p.tipo) &&
             estados.indexOf(p.estado) >= 0;
         }));
       };
@@ -121,20 +124,26 @@ function calcularFinanzas_(mesFin) {
         if (ahora <= limite) return;
         var aTiempo = suma_(pagos.filter(function (p) {
           var f = aFecha_(p.fecha);
-          return p.apto === a.apto && p.mesAplicado === c.mes && p.tipo === TIPO_PAGO.ORDINARIA &&
+          return p.apto === a.apto && p.mesAplicado === c.mes && esCuota_(p.tipo) &&
             p.estado === ESTADO_PAGO.VERIFICADO && f && f <= limite;
         }));
         celdas[i + 1].multa += calcularMulta_(cfg.MULTA_MORA, c.cuota - aTiempo);
       });
     }
     var otros = suma_(pagos.filter(function (p) {
-      return p.apto === a.apto && p.tipo !== TIPO_PAGO.ORDINARIA && p.tipo !== TIPO_PAGO.MULTA &&
+      return p.apto === a.apto && !esCuota_(p.tipo) && p.tipo !== TIPO_PAGO.MULTA &&
         p.estado === ESTADO_PAGO.VERIFICADO;
+    }));
+    var creditos = suma_(pagos.filter(function (p) {
+      return p.apto === a.apto && p.tipo === TIPO_PAGO.CREDITO && p.estado !== ESTADO_PAGO.RECHAZADO;
     }));
     var pendiente = suma_(pagos.filter(function (p) {
       return p.apto === a.apto && porVerificar_(p.estado);
     }));
-    return { apto: a.apto, propietario: a.propietario, saldoAnterior: a.saldoAnterior, celdas: celdas, otros: otros, pendiente: pendiente };
+    return {
+      apto: a.apto, propietario: a.propietario, notas: a.notas, saldoAnterior: a.saldoAnterior,
+      celdas: celdas, otros: otros, pendiente: pendiente, creditos: creditos
+    };
   });
 
   return { cfg: cfg, meses: meses, porMes: porMes, cuentas: cuentas, cuotaDe: cuotaDe, pagos: pagos, gastos: gastos };
@@ -147,6 +156,17 @@ function porVerificar_(estado) {
 
 function suma_(lista) {
   return lista.reduce(function (s, x) { return s + (x.valor || 0); }, 0);
+}
+
+/**
+ * Owed today: prior balance + fees and late fees of months already due -
+ * verified payments (including prepaid months). Negative = credit in favour.
+ */
+function deudaVencida_(cuenta, cfg, ahora) {
+  return cuenta.saldoAnterior + cuenta.celdas.reduce(function (s, c) {
+    var cargo = vencido_(c.mes, cfg, ahora) ? c.cuota + c.multa : 0;
+    return s + cargo - c.pagado - c.pagadoMulta;
+  }, 0);
 }
 
 /** Owed through a month: prior balance + dues + late fees up to mes - verified payments of both. */
@@ -189,12 +209,12 @@ function actualizarResumen() {
   var enc2 = ['Apto', 'Propietario', 'Saldo anterior'].concat(f.meses)
     .concat(['Total cuotas', 'Recargos mora', 'Total pagado', 'Debe a hoy', 'Otros aportes', 'Por verificar']);
   var filas2 = f.cuentas.map(function (c) {
-    var totCuota = c.celdas.reduce(function (s, x) { return x.mes <= hoy ? s + x.cuota : s; }, 0);
+    var totCuota = c.celdas.reduce(function (s, x) { return vencido_(x.mes, f.cfg) ? s + x.cuota : s; }, 0);
     var totMulta = c.celdas.reduce(function (s, x) { return s + x.multa; }, 0);
     var totPag = c.celdas.reduce(function (s, x) { return s + x.pagado + x.pagadoMulta; }, 0);
     return [c.apto, c.propietario, c.saldoAnterior]
       .concat(c.celdas.map(function (x) { return x.pagado; }))
-      .concat([totCuota, totMulta, totPag, deudaHasta_(c, hoy), c.otros, c.pendiente]);
+      .concat([totCuota, totMulta, totPag, deudaVencida_(c, f.cfg), c.otros, c.pendiente]);
   });
   est.getRange(1, 1, 1, enc2.length).setValues([enc2]).setFontWeight('bold').setBackground('#e8eaed');
   est.getRange(1, 4, 1, f.meses.length).setNumberFormat('@');
@@ -219,7 +239,7 @@ function actualizarResumen() {
   actualizarHistorial_(f);
   est.getRange(filas2.length + 3, 1).setValue(
     'Cada mes muestra lo pagado (verificado) de cuota ordinaria aplicado a ese mes. ' +
-    'Verde = completo, amarillo = parcial, rojo = sin pago. "Debe a hoy" = saldo anterior + cuotas + recargos hasta este mes - pagos.');
+    'Verde = completo, amarillo = parcial, rojo = sin pago. "Debe a hoy" = saldo anterior + cuotas vencidas + recargos - pagos. Una cuota vence ' + f.cfg.DIAS_ANTES_FIN_MES + ' días antes de fin de mes.');
   return f;
 }
 
@@ -236,9 +256,11 @@ function actualizarHistorial_(f) {
   sh.clearConditionalFormatRules();
   var hoy = mesDe_(new Date());
   var meses = f.meses.filter(function (m) { return m <= hoy; });
-  var enc = ['Apto', 'Propietario', 'Debía antes de ' + f.cfg.MES_INICIO].concat(meses)
-    .concat(['Cuotas a hoy', '✅ Verificado', '📎 Soporte por verificar', '🗣 Declarado sin soporte',
-      'Debe (solo verificado)', 'Debe (si se acepta todo lo reportado)']);
+  var ahora = new Date();
+  var enc = ['Apto', 'Propietario', 'Notas', 'Debía antes de ' + f.cfg.MES_INICIO].concat(meses)
+    .concat(['Cuotas vencidas a hoy', '💳 Créditos (incluidos)', '✅ Verificado', '📎 Soporte por verificar',
+      '🗣 Declarado sin soporte', 'Debe (solo verificado)', 'Debe (si se acepta todo lo reportado)']);
+  var M0 = 5; // first month column
   var filas = [];
   var fondos = [];
   f.cuentas.forEach(function (c) {
@@ -247,7 +269,8 @@ function actualizarHistorial_(f) {
     var colores = [];
     c.celdas.forEach(function (x) {
       if (x.mes > hoy) return;
-      t.cuota += x.cuota + x.multa;
+      var vence = vencido_(x.mes, f.cfg, ahora);
+      if (vence) t.cuota += x.cuota + x.multa;
       t.ver += x.pagado + x.pagadoMulta;
       t.sop += x.conSoporte;
       t.dec += x.declarado;
@@ -255,50 +278,53 @@ function actualizarHistorial_(f) {
       if (x.pagado) partes.push('✅ ' + formatoCOP_(x.pagado));
       if (x.conSoporte) partes.push('📎 ' + formatoCOP_(x.conSoporte));
       if (x.declarado) partes.push('🗣 ' + formatoCOP_(x.declarado));
-      celdas.push(partes.length ? partes.join('\n') : (x.cuota > 0 ? '✗' : ''));
+      celdas.push(partes.length ? partes.join('\n') : (x.cuota > 0 ? (vence ? '✗' : '⏳') : ''));
       var color = null;
       if (x.cuota > 0) {
         if (x.pagado >= x.cuota) color = '#d9ead3';
         else if (x.pagado + x.conSoporte >= x.cuota) color = '#cfe2f3';
         else if (x.pagado + x.conSoporte + x.declarado >= x.cuota) color = '#fce5cd';
         else if (partes.length) color = '#fff2cc';
-        else color = '#f4cccc';
+        else if (vence) color = '#f4cccc';
       }
       colores.push(color);
     });
     var debeVer = c.saldoAnterior + t.cuota - t.ver;
-    filas.push([c.apto, c.propietario, c.saldoAnterior].concat(celdas)
-      .concat([t.cuota, t.ver, t.sop, t.dec, debeVer, debeVer - t.sop - t.dec]));
+    filas.push([c.apto, c.propietario, c.notas, c.saldoAnterior].concat(celdas)
+      .concat([t.cuota, c.creditos, t.ver, t.sop, t.dec, debeVer, debeVer - t.sop - t.dec]));
     fondos.push(colores);
   });
 
   sh.getRange(1, 1, 1, enc.length).setValues([enc]).setFontWeight('bold').setBackground('#e8eaed')
     .setWrap(true).setVerticalAlignment('middle');
-  sh.getRange(1, 4, 1, meses.length).setNumberFormat('@').setValues([meses]);
+  sh.getRange(1, M0, 1, meses.length).setNumberFormat('@').setValues([meses]);
   if (filas.length) {
     sh.getRange(2, 1, filas.length, 1).setNumberFormat('@');
     sh.getRange(2, 1, filas.length, enc.length).setValues(filas).setVerticalAlignment('middle');
-    sh.getRange(2, 3, filas.length, 1).setNumberFormat('$#,##0;[Red]-$#,##0');
-    sh.getRange(2, 4 + meses.length, filas.length, 6).setNumberFormat('$#,##0;[Red]-$#,##0');
-    sh.getRange(2, 4, filas.length, meses.length).setBackgrounds(fondos).setWrap(true)
+    sh.getRange(2, 3, filas.length, 1).setWrap(true).setFontSize(9);
+    sh.getRange(2, 4, filas.length, 1).setNumberFormat('$#,##0;[Red]-$#,##0');
+    sh.getRange(2, M0 + meses.length, filas.length, 7).setNumberFormat('$#,##0;[Red]-$#,##0');
+    sh.getRange(2, M0, filas.length, meses.length).setBackgrounds(fondos).setWrap(true)
       .setHorizontalAlignment('center').setFontSize(9);
     sh.getRange(2, enc.length - 1, filas.length, 2).setFontWeight('bold');
   }
-  sh.setColumnWidths(4, meses.length, 95);
+  sh.setColumnWidth(3, 220);
+  sh.setColumnWidths(M0, meses.length, 95);
   sh.setFrozenRows(1);
   sh.setFrozenColumns(2);
 
   var ley = filas.length + 3;
-  sh.getRange(ley, 1, 7, 2).setValues([
-    ['Leyenda', ''],
+  sh.getRange(ley, 1, 8, 2).setValues([
+    ['Leyenda', 'Esta pestaña se genera sola: no escriba aquí. Para registrar pagos use la pestaña Captura (o Pagos); las notas van en Apartamentos ▸ Notas.'],
     ['✅ Verificado', 'Pago confirmado en el banco o con soporte aceptado.'],
     ['📎 Soporte', 'El propietario envió soporte; falta verificarlo.'],
     ['🗣 Declarado', 'Alguien dice que se pagó, pero no hay soporte.'],
-    ['✗', 'No hay ningún pago reportado para ese mes.'],
+    ['✗', 'No hay ningún pago reportado para ese mes (ya vencido).'],
+    ['⏳', 'Cuota del mes en curso, aún no vence.'],
     ['Colores', 'Verde = verificado completo · Azul = completo con soporte · Naranja = completo solo con lo declarado · Amarillo = parcial · Rojo = nada.'],
     ['Actualizado', Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd HH:mm')]
   ]);
-  sh.getRange(ley, 1, 7, 1).setFontWeight('bold');
+  sh.getRange(ley, 1, 8, 1).setFontWeight('bold');
 }
 
 /** Builds the report for one month as a Google Doc + PDF in Drive/Informes/<año>. */

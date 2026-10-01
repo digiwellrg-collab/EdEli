@@ -55,6 +55,19 @@ Cada pago que reporte se registra a mano en **Pagos** con `Estado = Declarado (s
   marque el otro **Rechazado** con la nota "duplicado de fila N".
 - **EdEli ▸ Actualizar resumen y estado de cuenta** refresca el Historial.
 
+## Registrar rápido: pestaña Captura
+
+**No escriba en Historial de pagos**: se regenera sola y lo escrito se pierde. Para cargar
+pagos pasados (por ejemplo en vivo en la asamblea):
+
+1. **EdEli ▸ Preparar hoja Captura**: cuadrícula apartamento × mes.
+2. Escriba `x` en cada mes pagado (= la cuota de ese mes) o el valor si fue distinto.
+3. **Crédito**: gasto del edificio que pagó el propietario (ej. una factura de Acuacar):
+   valor, mes y descripción. Se descuenta de lo que debe y se registra también en Gastos.
+4. **Nota**: se guarda en Apartamentos ▸ Notas y aparece en el Historial.
+5. **EdEli ▸ Registrar captura…** → `D` (declarado sin soporte) o `V` (verificado). Crea las
+   filas en Pagos, omite meses que ya tenían pago, y limpia la cuadrícula.
+
 ## Paso 4 – En la asamblea
 
 Proyecte o comparta la pestaña **Historial de pagos**:

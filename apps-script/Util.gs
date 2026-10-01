@@ -13,6 +13,7 @@ var HOJAS = {
   RESUMEN: 'Resumen',
   ESTADO: 'Estado de cuenta',
   HISTORIAL: 'Historial de pagos',
+  CAPTURA: 'Captura',
   BANCO: 'Banco',
   INSTRUCCIONES: 'Instrucciones'
 };
@@ -37,6 +38,7 @@ var TIPO_PAGO = {
   EXTRAORDINARIA: 'Cuota extraordinaria',
   APORTE: 'Aporte voluntario',
   MULTA: 'Multa / interés de mora',
+  CREDITO: 'Crédito (gasto pagado por propietario)',
   PARQUEADERO: 'Arriendo parqueadero',
   OTRO: 'Otro ingreso'
 };
@@ -163,6 +165,19 @@ function parseCoef_(v) {
   var n = typeof v === 'number' ? v : Number(String(v).replace('%', '').replace(',', '.').trim());
   if (!isFinite(n) || n <= 0) return null;
   return n < 1 ? Math.round(n * 10000) / 100 : n;
+}
+
+/**
+ * Types that pay an apartment's dues: the ordinary fee, and a credit for a
+ * building expense the owner paid directly (e.g. a utility bill).
+ */
+function esCuota_(tipo) {
+  return tipo === TIPO_PAGO.ORDINARIA || tipo === TIPO_PAGO.CREDITO;
+}
+
+/** A month's fee is due once its deadline has passed. */
+function vencido_(mes, cfg, ahora) {
+  return fechaLimite_(mes, cfg.DIAS_ANTES_FIN_MES) < (ahora || new Date());
 }
 
 /** Late fee: "10000" = fixed amount; "2%" = percent of the unpaid amount. */

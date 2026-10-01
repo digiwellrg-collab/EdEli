@@ -6,7 +6,7 @@
 function encabezados_(nombre) {
   var h = {};
   h[HOJAS.CONFIG] = ['Clave', 'Valor', 'Descripción'];
-  h[HOJAS.APTOS] = ['Apto', 'Propietario', 'Emails', 'Coeficiente (%)', 'Saldo anterior', 'Activo', 'Nombre en banco', 'Código pago'];
+  h[HOJAS.APTOS] = ['Apto', 'Propietario', 'Emails', 'Coeficiente (%)', 'Saldo anterior', 'Activo', 'Nombre en banco', 'Código pago', 'Notas'];
   h[HOJAS.CUOTAS] = ['Apto', 'Desde', 'Cuota mensual', 'Notas'];
   h[HOJAS.PAGOS] = ['Fecha registro', 'Fecha pago', 'Apto', 'Mes aplicado', 'Valor', 'Tipo',
     'Método', 'Soporte', 'Remitente', 'Estado', 'Notas', 'Gmail ID'];
@@ -92,6 +92,7 @@ function configuracionInicial() {
   if (!hayCuotas) {
     try { escribirCuotasCoeficiente_(getConfig_().MES_INICIO); } catch (e) { /* coefficients not filled in yet */ }
   }
+  if (!ss.getSheetByName(HOJAS.CAPTURA)) prepararCaptura();
   actualizarInstrucciones();
 
   SpreadsheetApp.getUi().alert(

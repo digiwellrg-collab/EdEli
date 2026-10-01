@@ -280,4 +280,41 @@ test('history levels: verified, soporte, declared', () => {
   tablas.Pagos.pop();
 });
 
+test('captura grid becomes payments, credits and notes', () => {
+  ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
+  const f = ctx.calcularFinanzas_('2025-12');
+  const datos = [
+    ['Apto', 'Propietario', '2025-10', '2025-11', '2025-12', 'Crédito valor', 'Crédito mes (AAAA-MM)', 'Crédito descripción', 'Nota (se guarda en Apartamentos)'],
+    ['401', 'A', 'x', 'x', '90.000', '336792', '2025-12', 'Factura vencida Acuacar', 'Al día hasta dic'],
+    ['402', 'B', 'x', '', 'abc', '', '', '', ''],
+    ['Cómo usar: ...', '', '', '', '', '', '', '', '']
+  ];
+  const r = ctx.registrosCaptura_(datos, f, 'Declarado (sin soporte)', '2026-10-01');
+  // Oct is already verified for 401 and 402 in the fixture -> skipped; 401 Nov is only partly paid -> recorded.
+  assert.strictEqual(JSON.stringify(r.omitidos), JSON.stringify(['Apto 401 2025-10', 'Apto 402 2025-10']));
+  const p401 = r.pagos.filter((p) => p.Apto === '401');
+  assert.strictEqual(JSON.stringify(p401.map((p) => [p['Mes aplicado'], p.Valor, p.Tipo])), JSON.stringify([
+    ['2025-11', 120000, 'Cuota ordinaria'], ['2025-12', 90000, 'Cuota ordinaria'],
+    ['2025-12', 336792, 'Crédito (gasto pagado por propietario)']]));
+  assert.strictEqual(r.gastos.length, 1);
+  assert.strictEqual(r.gastos[0]['Categoría'], 'Agua (Acuacar)');
+  assert.strictEqual(r.notas['401'], 'Al día hasta dic');
+  // "abc" is reported as not understood.
+  assert.strictEqual(r.pagos.filter((p) => p.Apto === '402').length, 0);
+  assert.strictEqual(JSON.stringify(r.errores), JSON.stringify(['Apto 402 2025-12: "abc"']));
+});
+
+test('credits pay dues; only due months count as owed', () => {
+  ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
+  tablas.Pagos.push({ Apto: '401', 'Mes aplicado': '2025-12', 'Fecha pago': '', Valor: 100000, Tipo: 'Crédito (gasto pagado por propietario)', Estado: 'Verificado' });
+  const f = ctx.calcularFinanzas_('2025-12');
+  const c = f.cuentas.find((x) => x.apto === '401');
+  assert.strictEqual(c.celdas.find((x) => x.mes === '2025-12').pagado, 100000);
+  assert.strictEqual(c.creditos, 100000);
+  // As of 2025-11-27 only Oct and Nov are due: 120k + 120k - (120k + 60k) = 60k; Dec prepaid by credit.
+  assert.strictEqual(ctx.deudaVencida_(c, f.cfg, new Date('2025-11-27T12:00:00Z')), 60000 - 100000);
+  assert.strictEqual(ctx.vencido_('2025-11', f.cfg, new Date('2025-11-25T12:00:00Z')), false);
+  tablas.Pagos.pop();
+});
+
 console.log(`\n${pass} passed`);
