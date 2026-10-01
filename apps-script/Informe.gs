@@ -95,10 +95,31 @@ function calcularFinanzas_(mesFin) {
         return p.apto === a.apto && p.mesAplicado === mes && p.tipo === TIPO_PAGO.ORDINARIA &&
           p.estado === ESTADO_PAGO.VERIFICADO;
       }));
-      return { mes: mes, cuota: cuotaDe(a.apto, mes), pagado: pagado };
+      var pagadoMulta = suma_(pagos.filter(function (p) {
+        return p.apto === a.apto && p.mesAplicado === mes && p.tipo === TIPO_PAGO.MULTA &&
+          p.estado === ESTADO_PAGO.VERIFICADO;
+      }));
+      return { mes: mes, cuota: cuotaDe(a.apto, mes), pagado: pagado, multa: 0, pagadoMulta: pagadoMulta };
     });
+    // Late fee: dues for a month not fully paid (verified) by its deadline are
+    // charged a fee on the following month.
+    if (cfg.MULTA_MORA && cfg.MULTA_DESDE) {
+      var ahora = new Date();
+      celdas.forEach(function (c, i) {
+        if (c.cuota <= 0 || c.mes < cfg.MULTA_DESDE || !celdas[i + 1]) return;
+        var limite = fechaLimite_(c.mes, cfg.DIAS_ANTES_FIN_MES);
+        if (ahora <= limite) return;
+        var aTiempo = suma_(pagos.filter(function (p) {
+          var f = aFecha_(p.fecha);
+          return p.apto === a.apto && p.mesAplicado === c.mes && p.tipo === TIPO_PAGO.ORDINARIA &&
+            p.estado === ESTADO_PAGO.VERIFICADO && f && f <= limite;
+        }));
+        celdas[i + 1].multa += calcularMulta_(cfg.MULTA_MORA, c.cuota - aTiempo);
+      });
+    }
     var otros = suma_(pagos.filter(function (p) {
-      return p.apto === a.apto && p.tipo !== TIPO_PAGO.ORDINARIA && p.estado === ESTADO_PAGO.VERIFICADO;
+      return p.apto === a.apto && p.tipo !== TIPO_PAGO.ORDINARIA && p.tipo !== TIPO_PAGO.MULTA &&
+        p.estado === ESTADO_PAGO.VERIFICADO;
     }));
     var pendiente = suma_(pagos.filter(function (p) {
       return p.apto === a.apto && (p.estado === ESTADO_PAGO.PENDIENTE || p.estado === ESTADO_PAGO.REVISAR);
@@ -113,10 +134,10 @@ function suma_(lista) {
   return lista.reduce(function (s, x) { return s + (x.valor || 0); }, 0);
 }
 
-/** Owed through a month: prior balance + dues up to mes - verified ordinary payments up to mes. */
+/** Owed through a month: prior balance + dues + late fees up to mes - verified payments of both. */
 function deudaHasta_(cuenta, mes) {
   return cuenta.saldoAnterior + cuenta.celdas.reduce(function (s, c) {
-    return c.mes <= mes ? s + c.cuota - c.pagado : s;
+    return c.mes <= mes ? s + c.cuota + c.multa - c.pagado - c.pagadoMulta : s;
   }, 0);
 }
 
@@ -151,13 +172,14 @@ function actualizarResumen() {
   est.clearConditionalFormatRules();
   var hoy = mesDe_(new Date());
   var enc2 = ['Apto', 'Propietario', 'Saldo anterior'].concat(f.meses)
-    .concat(['Total cuotas', 'Total pagado', 'Debe a hoy', 'Otros aportes', 'Por verificar']);
+    .concat(['Total cuotas', 'Recargos mora', 'Total pagado', 'Debe a hoy', 'Otros aportes', 'Por verificar']);
   var filas2 = f.cuentas.map(function (c) {
     var totCuota = c.celdas.reduce(function (s, x) { return x.mes <= hoy ? s + x.cuota : s; }, 0);
-    var totPag = c.celdas.reduce(function (s, x) { return s + x.pagado; }, 0);
+    var totMulta = c.celdas.reduce(function (s, x) { return s + x.multa; }, 0);
+    var totPag = c.celdas.reduce(function (s, x) { return s + x.pagado + x.pagadoMulta; }, 0);
     return [c.apto, c.propietario, c.saldoAnterior]
       .concat(c.celdas.map(function (x) { return x.pagado; }))
-      .concat([totCuota, totPag, deudaHasta_(c, hoy), c.otros, c.pendiente]);
+      .concat([totCuota, totMulta, totPag, deudaHasta_(c, hoy), c.otros, c.pendiente]);
   });
   est.getRange(1, 1, 1, enc2.length).setValues([enc2]).setFontWeight('bold').setBackground('#e8eaed');
   est.getRange(1, 4, 1, f.meses.length).setNumberFormat('@');
@@ -181,7 +203,7 @@ function actualizarResumen() {
   est.setFrozenColumns(2);
   est.getRange(filas2.length + 3, 1).setValue(
     'Cada mes muestra lo pagado (verificado) de cuota ordinaria aplicado a ese mes. ' +
-    'Verde = completo, amarillo = parcial, rojo = sin pago. "Debe a hoy" = saldo anterior + cuotas hasta este mes - pagos.');
+    'Verde = completo, amarillo = parcial, rojo = sin pago. "Debe a hoy" = saldo anterior + cuotas + recargos hasta este mes - pagos.');
   return f;
 }
 
@@ -239,10 +261,11 @@ function generarInforme_(mes) {
   }
 
   body.appendParagraph('4. Estado de cuenta por apartamento').setHeading(DocumentApp.ParagraphHeading.HEADING2);
-  tabla_(body, [['Apto', 'Cuota ' + mes, 'Pagado para ' + mes, 'Saldo pendiente acumulado']].concat(
+  tabla_(body, [['Apto', 'Cuota ' + mes, 'Recargo mora', 'Pagado para ' + mes, 'Saldo pendiente acumulado']].concat(
     f.cuentas.map(function (c) {
-      var celda = c.celdas.filter(function (x) { return x.mes === mes; })[0] || { cuota: 0, pagado: 0 };
-      return [c.apto, formatoCOP_(celda.cuota), formatoCOP_(celda.pagado), formatoCOP_(deudaHasta_(c, mes))];
+      var celda = c.celdas.filter(function (x) { return x.mes === mes; })[0] || { cuota: 0, pagado: 0, multa: 0, pagadoMulta: 0 };
+      return [c.apto, formatoCOP_(celda.cuota), formatoCOP_(celda.multa), formatoCOP_(celda.pagado + celda.pagadoMulta),
+        formatoCOP_(deudaHasta_(c, mes))];
     })), []);
 
   body.appendParagraph('5. Pendientes').setHeading(DocumentApp.ParagraphHeading.HEADING2);

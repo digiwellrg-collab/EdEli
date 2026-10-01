@@ -10,8 +10,10 @@ function procesarCorreos() {
   try {
     var r1 = procesarSoportes_();
     var r2 = procesarFacturas_();
+    var r3 = procesarBanco_();
     return 'Soportes nuevos: ' + r1.nuevos + ' (por revisar: ' + r1.revisar + '). ' +
-      'Facturas nuevas: ' + r2.nuevas + ' (sin valor detectado: ' + r2.sinValor + ').';
+      'Facturas nuevas: ' + r2.nuevas + ' (sin valor detectado: ' + r2.sinValor + '). ' +
+      'Movimientos Bancolombia: ' + r3.movimientos + '; pagos verificados automáticamente: ' + r3.verificados + '.';
   } finally {
     lock.releaseLock();
   }

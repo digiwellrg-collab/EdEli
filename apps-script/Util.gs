@@ -11,7 +11,9 @@ var HOJAS = {
   PAGOS: 'Pagos',
   GASTOS: 'Gastos',
   RESUMEN: 'Resumen',
-  ESTADO: 'Estado de cuenta'
+  ESTADO: 'Estado de cuenta',
+  BANCO: 'Banco',
+  INSTRUCCIONES: 'Instrucciones'
 };
 
 var ESTADO_PAGO = {
@@ -32,8 +34,15 @@ var TIPO_PAGO = {
   ORDINARIA: 'Cuota ordinaria',
   EXTRAORDINARIA: 'Cuota extraordinaria',
   APORTE: 'Aporte voluntario',
+  MULTA: 'Multa / interés de mora',
   PARQUEADERO: 'Arriendo parqueadero',
   OTRO: 'Otro ingreso'
+};
+
+var ESTADO_BANCO = {
+  CONCILIADO: 'Conciliado',
+  SIN_SOPORTE: 'Sin soporte',
+  NO_EDIFICIO: 'No es del edificio'
 };
 
 var CATEGORIA = {
@@ -47,7 +56,8 @@ var CATEGORIA = {
 var LABELS = {
   SOPORTE_OK: 'EdEli/Soporte procesado',
   SOPORTE_REVISAR: 'EdEli/Soporte revisar',
-  FACTURA_OK: 'EdEli/Factura procesada'
+  FACTURA_OK: 'EdEli/Factura procesada',
+  BANCO_OK: 'EdEli/Banco procesado'
 };
 
 /** Reads the Config sheet (columns A=clave, B=valor) into an object. */
@@ -61,6 +71,10 @@ function getConfig_() {
   cfg.MES_INICIO = normalizarMes_(cfg.MES_INICIO) || '2025-10';
   cfg.SALDO_INICIAL = parseCOP_(cfg.SALDO_INICIAL) || 0;
   cfg.VALOR_ASEO = parseCOP_(cfg.VALOR_ASEO) || 0;
+  cfg.DIAS_ANTES_FIN_MES = Number(cfg.DIAS_ANTES_FIN_MES) || 0;
+  cfg.DIAS_CONCILIACION = Number(cfg.DIAS_CONCILIACION) || 5;
+  cfg.MULTA_DESDE = normalizarMes_(cfg.MULTA_DESDE) || '';
+  cfg.MULTA_MORA = String(cfg.MULTA_MORA || '').trim();
   return cfg;
 }
 
@@ -92,6 +106,31 @@ function normalizarMes_(v) {
   if (!v) return null;
   if (Object.prototype.toString.call(v) === '[object Date]') return mesDe_(v);
   return parseMes_(String(v));
+}
+
+/** Payment deadline for a month: last day minus diasAntes, at 23:59:59 (script time zone). */
+function fechaLimite_(mes, diasAntes) {
+  var y = Number(mes.slice(0, 4));
+  var m = Number(mes.slice(5, 7));
+  return new Date(y, m, 0 - (diasAntes || 0), 23, 59, 59);
+}
+
+/** Accepts a Date or "yyyy-mm-dd" text; returns a Date or null. */
+function aFecha_(v) {
+  if (Object.prototype.toString.call(v) === '[object Date]') return isNaN(v) ? null : v;
+  var m = String(v || '').match(/(20\d{2})-(\d{1,2})-(\d{1,2})/);
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12) : null;
+}
+
+/** Late fee: "10000" = fixed amount; "2%" = percent of the unpaid amount. */
+function calcularMulta_(regla, saldoVencido) {
+  if (!regla || saldoVencido <= 0) return 0;
+  var r = String(regla).trim();
+  if (/%$/.test(r)) {
+    var pct = Number(r.replace('%', '').replace(',', '.'));
+    return isFinite(pct) ? Math.round(saldoVencido * pct / 100) : 0;
+  }
+  return parseCOP_(r) || 0;
 }
 
 function sumarMeses_(mes, n) {

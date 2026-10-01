@@ -122,6 +122,24 @@ function parseMontoFactura_(text) {
   return null;
 }
 
+/**
+ * Reads a Bancolombia notification email. Returns
+ * { ingreso: bool, valor: number|null, remitente: string } — ingreso is true
+ * only for money coming IN (transfer received, deposit), never for purchases,
+ * withdrawals or transfers sent.
+ */
+function parseAlertaBancolombia_(texto) {
+  var original = String(texto || '').replace(/\s+/g, ' ');
+  var t = normalizarTexto_(original);
+  var salida = /(compraste|pagaste|retiraste|transferiste|enviaste|retiro en|compra en)/;
+  var entrada = /(recibiste|recibio|recibido|recibida|te transfirieron|te consignaron|consignacion|abono a tu cuenta|abono en tu cuenta|transferencia recibida|deposito)/;
+  var ingreso = entrada.test(t) && !salida.test(t);
+  var m = original.match(/\$\s*([\d.,]+)/);
+  var valor = m ? parseCOP_(m[1].replace(/[.,]$/, '')) : null;
+  var r = original.match(/\bde\s+(?:la\s+cuenta\s+de\s+)?([A-Za-zÁÉÍÓÚÑáéíóúñ][A-Za-zÁÉÍÓÚÑáéíóúñ .]{2,60}?)\s+(?:en|a)\s+(?:tu|su)\s+(?:cuenta|producto)/i);
+  return { ingreso: ingreso, valor: valor, remitente: r ? r[1].trim() : '' };
+}
+
 if (typeof module !== 'undefined') {
   module.exports = {
     parseCOP_: parseCOP_, parseApto_: parseApto_, parseMes_: parseMes_,

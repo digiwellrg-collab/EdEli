@@ -6,12 +6,14 @@
 function encabezados_(nombre) {
   var h = {};
   h[HOJAS.CONFIG] = ['Clave', 'Valor', 'Descripción'];
-  h[HOJAS.APTOS] = ['Apto', 'Propietario', 'Emails', 'Coeficiente (%)', 'Saldo anterior', 'Activo'];
+  h[HOJAS.APTOS] = ['Apto', 'Propietario', 'Emails', 'Coeficiente (%)', 'Saldo anterior', 'Activo', 'Nombre en banco'];
   h[HOJAS.CUOTAS] = ['Apto', 'Desde', 'Cuota mensual', 'Notas'];
   h[HOJAS.PAGOS] = ['Fecha registro', 'Fecha pago', 'Apto', 'Mes aplicado', 'Valor', 'Tipo',
     'Método', 'Soporte', 'Remitente', 'Estado', 'Notas', 'Gmail ID'];
   h[HOJAS.GASTOS] = ['Fecha registro', 'Mes', 'Categoría', 'Proveedor', 'Descripción', 'Valor',
     'Fecha pago', 'Soporte factura', 'Soporte pago', 'Estado', 'Notas', 'Gmail ID'];
+  h[HOJAS.BANCO] = ['Fecha', 'Valor', 'Remitente (banco)', 'Apto sugerido', 'Estado', 'Pago vinculado',
+    'Texto alerta', 'Gmail ID'];
   return h[nombre];
 }
 
@@ -26,6 +28,12 @@ var CONFIG_INICIAL = [
   ['CONSULTA_AFINIA', 'from:afinia has:attachment', 'Búsqueda de Gmail para las facturas de energía.'],
   ['CONSULTA_ACUACAR', 'from:acuacar has:attachment', 'Búsqueda de Gmail para las facturas de agua.'],
   ['ENVIAR_ACUSE', 'NO', 'SI = responder automáticamente al propietario cuando llega su soporte.'],
+  ['CUENTA_PAGO', 'Bancolombia Ahorros No. ____ a nombre de ____', 'Cuenta donde los propietarios pagan (aparece en Instrucciones).'],
+  ['DIAS_ANTES_FIN_MES', 5, 'La cuota de cada mes vence este número de días antes del último día del mes.'],
+  ['MULTA_MORA', 0, 'Recargo por pago tardío, se cobra el mes siguiente. "10000" = valor fijo; "2%" = % de lo vencido. 0 = sin recargo.'],
+  ['MULTA_DESDE', '', 'Primer mes (AAAA-MM) en que se aplica el recargo. Vacío = no se aplica.'],
+  ['CONSULTA_BANCO', 'from:notificacionesbancolombia.com', 'Búsqueda de Gmail para las alertas de Bancolombia.'],
+  ['DIAS_CONCILIACION', 5, 'Días de diferencia máximos entre el soporte y la alerta del banco para emparejarlos.'],
   ['DESTINATARIOS_INFORME', '', 'Correos (separados por coma) que reciben el informe mensual.'],
   ['CARPETA_DRIVE_ID', '', 'Lo llena la configuración inicial: carpeta raíz en Google Drive.']
 ];
@@ -38,7 +46,7 @@ function configuracionInicial() {
   ss.setSpreadsheetLocale('es_CO');
 
   var nuevas = {};
-  [HOJAS.CONFIG, HOJAS.APTOS, HOJAS.CUOTAS, HOJAS.PAGOS, HOJAS.GASTOS].forEach(function (nombre) {
+  [HOJAS.CONFIG, HOJAS.APTOS, HOJAS.CUOTAS, HOJAS.PAGOS, HOJAS.GASTOS, HOJAS.BANCO].forEach(function (nombre) {
     var sh = ss.getSheetByName(nombre);
     if (!sh) {
       sh = ss.insertSheet(nombre);
@@ -48,7 +56,7 @@ function configuracionInicial() {
     sh.getRange(1, 1, 1, h.length).setValues([h]).setFontWeight('bold').setBackground('#e8eaed');
     sh.setFrozenRows(1);
   });
-  [HOJAS.RESUMEN, HOJAS.ESTADO].forEach(function (nombre) {
+  [HOJAS.INSTRUCCIONES, HOJAS.RESUMEN, HOJAS.ESTADO].forEach(function (nombre) {
     if (!ss.getSheetByName(nombre)) ss.insertSheet(nombre);
   });
   var hoja1 = ss.getSheetByName('Hoja 1') || ss.getSheetByName('Sheet1') || ss.getSheetByName('Hoja1');
@@ -77,13 +85,14 @@ function configuracionInicial() {
   crearCarpetas_();
   crearEtiquetas_();
   instalarDisparadores_();
+  actualizarInstrucciones();
 
   SpreadsheetApp.getUi().alert(
     'EdEli configurado',
     'Siguientes pasos:\n' +
-    '1. Hoja Apartamentos: complete los 9 apartamentos, propietarios y correos.\n' +
+    '1. Hoja Apartamentos: propietarios, correos y nombre como aparece en Bancolombia.\n' +
     '2. Hoja Cuotas: valor de la cuota de cada apartamento desde 2025-10.\n' +
-    '3. Hoja Config: SALDO_INICIAL y VALOR_ASEO.\n' +
+    '3. Hoja Config: CUENTA_PAGO, VALOR_ASEO y recargo por mora; luego EdEli ▸ Actualizar instrucciones.\n' +
     '4. Registre los pagos y gastos anteriores (octubre 2025 en adelante).\n' +
     'Los correos se revisan solos cada hora.',
     SpreadsheetApp.getUi().ButtonSet.OK);
@@ -128,6 +137,14 @@ function aplicarFormatos_() {
   gastos.getRange('G2:G').setNumberFormat('yyyy-mm-dd');
   gastos.getRange('C2:C').setDataValidation(lista(objValores_(CATEGORIA)));
   gastos.getRange('J2:J').setDataValidation(lista(objValores_(ESTADO_GASTO)));
+
+  var banco = hoja_(HOJAS.BANCO);
+  banco.getRange('A2:A').setNumberFormat('yyyy-mm-dd hh:mm');
+  banco.getRange('B2:B').setNumberFormat('$#,##0');
+  banco.getRange('D:D').setNumberFormat('@');
+  banco.getRange('E2:E').setDataValidation(lista(objValores_(ESTADO_BANCO)));
+  colorearEstado_(banco, 'E2:E', [
+    [ESTADO_BANCO.CONCILIADO, '#d9ead3'], [ESTADO_BANCO.SIN_SOPORTE, '#fff2cc'], [ESTADO_BANCO.NO_EDIFICIO, '#cccccc']]);
 
   colorearEstado_(pagos, 'J2:J', [
     [ESTADO_PAGO.VERIFICADO, '#d9ead3'], [ESTADO_PAGO.PENDIENTE, '#fff2cc'],

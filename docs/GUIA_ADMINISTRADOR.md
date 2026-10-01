@@ -24,7 +24,7 @@ Hágalo con la cuenta que recibe los soportes (al inicio **juglic.co@gmail.com**
 3. Borre el contenido de `Código.gs`. Cree un archivo por cada uno de la carpeta
    [`apps-script/`](../apps-script) (botón **+ ▸ Secuencia de comandos**, mismo nombre
    sin `.gs`) y pegue su contenido:
-   `Parse`, `Util`, `Setup`, `Correos`, `Informe`, `Menu`.
+   `Parse`, `Util`, `Setup`, `Correos`, `Banco`, `Instrucciones`, `Informe`, `Menu`.
 4. Muestre `appsscript.json`: **Configuración del proyecto ▸ Mostrar el archivo de manifiesto**,
    y pegue el contenido de [`apps-script/appsscript.json`](../apps-script/appsscript.json).
 5. Guarde (Ctrl+S). Vuelva a la hoja y recárguela: aparece el menú **EdEli**.
@@ -91,6 +91,34 @@ el link del comprobante en `Soporte pago`). Solo lo pagado cuenta en el saldo.
 ### Transparencia con los propietarios
 Comparta la hoja como **Lector** (solo ver) con los propietarios, o comparta solo la
 carpeta `Informes`. No les dé permiso de edición.
+
+### Conciliación automática con Bancolombia
+1. En la app de Bancolombia active las **alertas y notificaciones por correo** para la
+   cuenta que recibe los pagos, con destino al correo del sistema (juglic.co@gmail.com).
+2. Cada alerta de dinero recibido se registra en la pestaña **Banco**.
+3. Cada hora, cada soporte `Pendiente verificación` se empareja con un movimiento del
+   banco del **mismo valor** y fecha cercana (`DIAS_CONCILIACION`). Si lo encuentra, el pago
+   pasa solo a **Verificado** y el movimiento a **Conciliado**.
+4. Movimientos `Sin soporte` = alguien pagó y no envió el correo. Si en Apartamentos llena
+   **Nombre en banco** (como aparece en la alerta), el sistema sugiere el apartamento.
+5. Movimientos que no son del edificio: márquelos `No es del edificio`.
+
+> Si las alertas no se reconocen (la pestaña Banco queda vacía), reenvíe una alerta de
+> ejemplo para ajustar `CONSULTA_BANCO` o el lector de alertas.
+
+### Fecha límite y recargo por mora
+- La cuota vence `DIAS_ANTES_FIN_MES` días antes del fin de mes (5 → 23 de febrero, 26 de marzo...).
+- Si al vencimiento la cuota no está pagada y verificada completa, se cobra `MULTA_MORA` en el
+  mes siguiente (`10000` = fijo; `2%` = porcentaje de lo no pagado), a partir de `MULTA_DESDE`.
+- Por Ley 675 de 2001 (art. 30) el cobro por mora es interés de hasta 1,5 veces el interés
+  bancario corriente, y debe estar aprobado por el reglamento o la asamblea. Active el recargo
+  solo cuando esté aprobado.
+- Los pagos de recargos se registran con `Tipo = Multa / interés de mora`.
+
+### Instrucciones para propietarios
+La pestaña **Instrucciones** se genera con los datos de Config (cuenta, fechas límite,
+asunto listo para copiar por apartamento). Después de cambiar Config o Cuotas:
+**EdEli ▸ Actualizar instrucciones**.
 
 ## 4. Cómo se calculan los números
 

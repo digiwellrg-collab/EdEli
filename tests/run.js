@@ -31,6 +31,8 @@ function test(name, fn) {
   try { fn(); pass++; console.log('ok  ', name); } catch (e) { console.error('FAIL', name, '\n', e.message); process.exitCode = 1; }
 }
 
+const d = (s) => new Date(s + 'T12:00:00Z');
+
 // ---- Parsing ----
 test('COP amounts', () => {
   assert.strictEqual(ctx.parseCOP_('$120.000'), 120000);
@@ -76,8 +78,55 @@ test('month helpers', () => {
   assert.strictEqual(ctx.formatoCOP_(-1234567), '-$1.234.567');
 });
 
+// ---- Bancolombia alerts & reconciliation ----
+test('Bancolombia incoming alerts', () => {
+  let a = ctx.parseAlertaBancolombia_('Bancolombia: Recibiste una transferencia por $120,000 de JUAN PEREZ en tu cuenta **1234, el 24/02/2026 a las 12:22');
+  assert.deepStrictEqual({ ...a }, { ingreso: true, valor: 120000, remitente: 'JUAN PEREZ' });
+  a = ctx.parseAlertaBancolombia_('Bancolombia le informa Transferencia recibida por $82.056,00 de Maria Lopez en su cuenta *1234');
+  assert.strictEqual(a.ingreso, true);
+  assert.strictEqual(a.valor, 82056);
+  assert.strictEqual(a.remitente, 'Maria Lopez');
+  a = ctx.parseAlertaBancolombia_('Bancolombia le informa Consignacion por $100.000 en su cuenta *1234');
+  assert.strictEqual(a.ingreso, true);
+  assert.strictEqual(a.valor, 100000);
+});
+
+test('Bancolombia outgoing alerts are ignored', () => {
+  assert.strictEqual(ctx.parseAlertaBancolombia_('Bancolombia: Compraste $50.000 en EXITO con tu T.Deb *1234').ingreso, false);
+  assert.strictEqual(ctx.parseAlertaBancolombia_('Bancolombia: Transferiste $120,000 a la cuenta *9876').ingreso, false);
+});
+
+test('reconciliation pairs soporte with deposit', () => {
+  const pagos = [
+    { _fila: 2, Apto: '401', 'Fecha pago': d('2026-02-24'), Valor: 120000, Estado: 'Pendiente verificación' },
+    { _fila: 3, Apto: '303', 'Fecha pago': d('2026-02-24'), Valor: 120000, Estado: 'Pendiente verificación' },
+    { _fila: 4, Apto: '201', 'Fecha pago': d('2026-02-24'), Valor: 95000, Estado: 'Pendiente verificación' },
+    { _fila: 5, Apto: '202', 'Fecha pago': d('2026-02-24'), Valor: 120000, Estado: 'Verificado' }
+  ];
+  const banco = [
+    { _fila: 2, Fecha: d('2026-02-10'), Valor: 120000, 'Apto sugerido': '', Estado: 'Sin soporte', 'Pago vinculado': '' }, // too early
+    { _fila: 3, Fecha: d('2026-02-23'), Valor: 120000, 'Apto sugerido': '303', Estado: 'Sin soporte', 'Pago vinculado': '' },
+    { _fila: 4, Fecha: d('2026-02-24'), Valor: 120000, 'Apto sugerido': '', Estado: 'Sin soporte', 'Pago vinculado': '' },
+    { _fila: 5, Fecha: d('2026-02-24'), Valor: 120000, 'Apto sugerido': '', Estado: 'Conciliado', 'Pago vinculado': 'x' }
+  ];
+  const pares = ctx.emparejar_(pagos, banco, 5).map((p) => [p.pago._fila, p.mov._fila]);
+  // 401 takes the same-day deposit; 303 takes the one with its name; 201 has no matching amount.
+  assert.strictEqual(JSON.stringify(pares), JSON.stringify([[2, 4], [3, 3]]));
+});
+
+test('deadline and late fee helpers', () => {
+  const f = ctx.fechaLimite_('2026-02', 5);
+  assert.strictEqual(f.getMonth(), 1);
+  assert.strictEqual(f.getDate(), 23);
+  assert.strictEqual(ctx.fechaLimite_('2026-03', 5).getDate(), 26);
+  assert.strictEqual(ctx.calcularMulta_('10000', 120000), 10000);
+  assert.strictEqual(ctx.calcularMulta_('2%', 120000), 2400);
+  assert.strictEqual(ctx.calcularMulta_('2,5%', 100000), 2500);
+  assert.strictEqual(ctx.calcularMulta_('10000', 0), 0);
+  assert.strictEqual(ctx.calcularMulta_('', 120000), 0);
+});
+
 // ---- Balance math with mocked sheets ----
-const d = (s) => new Date(s + 'T12:00:00Z');
 const tablas = {
   Apartamentos: [
     { Apto: '401', Propietario: 'A', 'Saldo anterior': 0, Activo: 'SI' },
@@ -133,6 +182,25 @@ test('per-apartment debt uses dated fee changes', () => {
   assert.strictEqual(ctx.deudaHasta_(c402, '2025-12'), 290000);
   assert.strictEqual(c402.pendiente, 120000);
   assert.strictEqual(c401.otros, 30000);
+});
+
+test('late fee charged the following month', () => {
+  ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5, MULTA_MORA: '10000', MULTA_DESDE: '2025-11' });
+  tablas.Pagos.push(
+    { Apto: '402', 'Mes aplicado': '2025-11', 'Fecha pago': d('2025-11-24'), Valor: 10000, Tipo: 'Multa / interés de mora', Estado: 'Verificado' });
+  const f = ctx.calcularFinanzas_('2026-01');
+  const c401 = f.cuentas.find((c) => c.apto === '401');
+  const cel = (c, m) => c.celdas.find((x) => x.mes === m);
+  // Oct is before MULTA_DESDE: no fee in Nov.
+  assert.strictEqual(cel(c401, '2025-11').multa, 0);
+  // Nov: 401 paid 60k of 100k -> fee in Dec. Dec unpaid -> fee in Jan.
+  assert.strictEqual(cel(c401, '2025-12').multa, 10000);
+  assert.strictEqual(cel(c401, '2026-01').multa, 10000);
+  const c402 = f.cuentas.find((c) => c.apto === '402');
+  // 402's Nov soporte is still pending -> fee in Dec; its verified fee payment reduces debt.
+  assert.strictEqual(cel(c402, '2025-12').multa, 10000);
+  assert.strictEqual(cel(c402, '2025-11').pagadoMulta, 10000);
+  tablas.Pagos.pop();
 });
 
 console.log(`\n${pass} passed`);
