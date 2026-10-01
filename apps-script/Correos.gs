@@ -131,14 +131,22 @@ function guardarAdjuntos_(adjuntos, ruta, base) {
   });
 }
 
-/** owner email -> apartment, from the Emails column of Apartamentos. */
+/**
+ * owner email -> apartment, from the Emails column of Apartamentos. An email
+ * listed on several apartments is left out: the subject must then say which.
+ */
 function mapaEmailApto_() {
   var map = {};
+  var repetidos = {};
   leerTabla_(HOJAS.APTOS).filas.forEach(function (f) {
     String(f['Emails'] || '').split(/[,;\s]+/).forEach(function (e) {
-      if (e) map[e.trim().toLowerCase()] = String(f['Apto']);
+      var k = e.trim().toLowerCase();
+      if (!k) return;
+      if (map[k] && map[k] !== String(f['Apto'])) repetidos[k] = true;
+      map[k] = String(f['Apto']);
     });
   });
+  Object.keys(repetidos).forEach(function (k) { delete map[k]; });
   return map;
 }
 
