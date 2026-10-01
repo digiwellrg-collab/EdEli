@@ -36,8 +36,23 @@ de Gmail `EdEli/...` y dos tareas automáticas:
 - **cada hora**: revisa correos nuevos (soportes y facturas);
 - **día 1 de cada mes**: registra el aseo del mes y genera el informe del mes anterior.
 
-> Alternativa para técnicos: con [clasp](https://github.com/google/clasp) se puede subir la
-> carpeta `apps-script/` directamente (`clasp create --type sheets`, `clasp push`).
+### Actualizar el código (cada vez que cambie algo en GitHub)
+
+El repositorio ya está vinculado al proyecto de Apps Script (`.clasp.json`). En la carpeta
+del repositorio, en la terminal:
+
+```
+git pull
+clasp push -f
+```
+
+Luego recargue la hoja. Si el cambio agrega pestañas o ajustes nuevos, ejecute
+**EdEli ▸ Configuración inicial** (no borra datos).
+
+Preparación única en un computador nuevo: instalar [Node.js](https://nodejs.org) (LTS),
+`npm install -g @google/clasp`, activar la API en https://script.google.com/home/usersettings
+y `clasp login` con la cuenta dueña de la hoja. Si PowerShell bloquea `clasp`:
+`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 ## 2. Datos iniciales
 
