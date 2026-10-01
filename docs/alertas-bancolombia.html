@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alertas Bancolombia</title>
+<style>
+  :root { --bg:#ffffff; --fg:#1d1d1f; --muted:#6b6b70; --card:#f5f6f8; --line:#d9dce1; --ok:#1e7d32; --bad:#b3261e; --hi:#fff3c4; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#141416; --fg:#ececef; --muted:#9a9aa2; --card:#1f2024; --line:#34353b; --ok:#7bd88f; --bad:#ff8a80; --hi:#4a4120; } }
+  :root[data-theme="dark"] { --bg:#141416; --fg:#ececef; --muted:#9a9aa2; --card:#1f2024; --line:#34353b; --ok:#7bd88f; --bad:#ff8a80; --hi:#4a4120; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:22px; margin:0 0 4px; } h2 { font-size:17px; margin:28px 0 8px; }
+  p.sub { color:var(--muted); margin:0 0 20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin:10px 0; }
+  .alert { font-family: ui-monospace, Menlo, Consolas, monospace; font-size:13.5px; word-break:break-word; }
+  mark { background:var(--hi); color:inherit; padding:0 2px; border-radius:3px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  .ok { color:var(--ok); font-weight:600; } .bad { color:var(--bad); font-weight:600; }
+  .wrap { overflow-x:auto; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Alertas Bancolombia vs. extracto</h1>
+  <p class="sub">Texto real tomado de la pestaña Banco (alertas en juglic.co@gmail.com, cuenta **3111).</p>
+
+  <h2>Qué dice una alerta</h2>
+  <div class="card alert">Bancolombia: Recibiste una transferencia por <mark>$1,000,000</mark> de <mark>ALEJANDRO GOMEZ</mark> en tu cuenta <mark>**3111</mark>, el <mark>10/12/2025 a las 11:24</mark>.</div>
+  <div class="card alert">Bancolombia: Recibiste una transferencia por <mark>$500,000</mark> de <mark>ALEJANDRO GOMEZ</mark> en tu cuenta **3111, el 17/10/2025 a las 14:20.</div>
+  <div class="card alert">Bancolombia: Recibiste una transferencia por <mark>$1,900,000</mark> de <mark>ALEJANDRO GOMEZ</mark> en tu cuenta **3111, el 14/10/2025 a las 22:03.</div>
+  <p>Formato en inglés: coma para miles, punto para decimales. En estas alertas no hubo centavos; si vinieran (<code>$2,500,000.00</code>), el sistema los lee igual.</p>
+
+  <h2>Alerta vs. extracto</h2>
+  <div class="wrap">
+  <table>
+    <tr><th>Dato</th><th>Alerta por correo</th><th>Extracto mensual</th></tr>
+    <tr><td>Valor</td><td class="ok">Sí</td><td class="ok">Sí (con centavos)</td></tr>
+    <tr><td>Fecha</td><td class="ok">Sí, con hora</td><td class="ok">Sí, solo día</td></tr>
+    <tr><td>Quién envió</td><td class="ok">Nombre del titular*</td><td class="bad">No ("TRANSFERENCIA CTA SUC VIRTUAL")</td></tr>
+    <tr><td>Cuenta de origen</td><td class="bad">No</td><td class="bad">No</td></tr>
+    <tr><td>Llega</td><td class="ok">Al instante</td><td>Una vez al mes</td></tr>
+  </table>
+  </div>
+  <p class="sub">* Cuando la transferencia viene de otra cuenta Bancolombia. Desde Nequi u otros bancos puede llegar sin nombre.</p>
+
+  <h2>Cómo se verifica un pago</h2>
+  <div class="card">Soporte del propietario (dice <b>apartamento y mes</b>) + alerta del banco con el <b>mismo valor</b> y fecha cercana → <span class="ok">Verificado</span>. Ninguno de los dos solo es suficiente: el banco no dice el apartamento y el soporte no prueba que el dinero llegó.</div>
+</main>
+</body>
+</html>
