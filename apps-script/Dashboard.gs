@@ -20,7 +20,7 @@ function doGet() {
     json = JSON.stringify(datosDashboard_(f, mesDe_(new Date()), new Date()));
     CacheService.getScriptCache().put(CACHE_DASHBOARD, json, 600);
   }
-  var t = HtmlService.createTemplateFromFile('Dashboard');
+  var t = HtmlService.createTemplateFromFile('Panel');
   // Escape "<" so the data can never close the <script> tag it lives in.
   t.datosJson = json.replace(/</g, '\\u003c');
   return t.evaluate()
