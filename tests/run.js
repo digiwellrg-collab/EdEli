@@ -303,6 +303,28 @@ test('estado de cuenta row: evidence colours, notes and both balances', () => {
   assert.strictEqual(r.debe - r.porVerificar, 200000);
 });
 
+test('public dashboard: building totals only, no names or per-apartment amounts', () => {
+  ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5, NOMBRE_EDIFICIO: 'Edificio X' });
+  tablas.Apartamentos[0].Propietario = 'Nombre Privado';
+  tablas.Apartamentos[0].Notas = 'nota privada';
+  const f = ctx.calcularFinanzas_('2025-12');
+  const out = ctx.datosDashboard_(f, '2025-12', d('2025-12-20'));
+  const json = JSON.stringify(out);
+  assert.ok(json.indexOf('Nombre Privado') < 0 && json.indexOf('nota privada') < 0);
+  assert.strictEqual(out.aptos, null);
+  assert.strictEqual(out.kpis.aptosTotal, 2);
+  assert.strictEqual(out.flujo.length, 3);
+  out.recaudo.forEach((r) => assert.strictEqual(r.verificado + r.soporte + r.declarado + r.pendiente, r.esperado));
+  assert.ok(out.aviso.length > 0);
+  // Opt-in grid: states only, never amounts.
+  ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5, DASHBOARD_POR_APTO: 'si', DASHBOARD_AVISO: '' });
+  const g = ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-20'));
+  assert.strictEqual(g.aviso, '');
+  g.aptos.filas.forEach((r) => r.estados.forEach((e) => assert.ok(['', 'ok', 'soporte', 'declarado', 'parcial', 'pendiente', 'futuro'].indexOf(e) >= 0)));
+  tablas.Apartamentos[0].Propietario = 'A';
+  delete tablas.Apartamentos[0].Notas;
+});
+
 test('captura grid becomes payments, credits and notes', () => {
   ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
   const f = ctx.calcularFinanzas_('2025-12');

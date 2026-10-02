@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f4f5f2;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --ring: rgba(11, 11, 11, 0.10);
+    --brand: #1f4e79;
+    --brand-ink: #ffffff;
+    --s1: #2a78d6;          /* ingresos / saldo / categorías */
+    --s2: #eb6834;          /* gastos */
+    --ok: #0ca30c;          /* verificado */
+    --sop: #2a78d6;         /* soporte por verificar */
+    --dec: #ec835a;         /* declarado sin soporte */
+    --track: #e1e0d9;       /* sin pago */
+    --bad: #d03b3b;
+    --good-text: #006300;
+    --bad-text: #b42c2c;
+    --notice: #fff6e0;
+    --notice-ring: #f0d590;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --ring: rgba(255, 255, 255, 0.10);
+      --brand: #16385a; --s1: #3987e5; --s2: #d95926;
+      --ok: #0ca30c; --sop: #3987e5; --dec: #d95926; --track: #383835; --bad: #e66767;
+      --good-text: #0ca30c; --bad-text: #e66767; --notice: #2a2414; --notice-ring: #5c4a1a;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255, 255, 255, 0.10);
+    --brand: #16385a; --s1: #3987e5; --s2: #d95926;
+    --ok: #0ca30c; --sop: #3987e5; --dec: #d95926; --track: #383835; --bad: #e66767;
+    --good-text: #0ca30c; --bad-text: #e66767; --notice: #2a2414; --notice-ring: #5c4a1a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px 40px; }
+  header.hero {
+    background: linear-gradient(135deg, var(--brand), #2a6aa5);
+    color: var(--brand-ink); padding: 28px 0 72px;
+  }
+  header .wrap { padding-bottom: 0; }
+  .eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; opacity: .8; margin: 0; }
+  h1 { font-size: clamp(24px, 4vw, 34px); margin: 4px 0 6px; font-weight: 700; }
+  .sub { margin: 0; opacity: .85; font-size: 14px; }
+  .lift { margin-top: -52px; }
+  .card {
+    background: var(--surface); border-radius: 14px; box-shadow: 0 0 0 1px var(--ring), 0 6px 20px rgba(0,0,0,.06);
+    padding: 18px 20px;
+  }
+  .notice {
+    background: var(--notice); box-shadow: 0 0 0 1px var(--notice-ring); border-radius: 12px;
+    padding: 12px 16px; font-size: 14px; color: var(--ink); margin-bottom: 16px;
+  }
+  .notice b { margin-right: 4px; }
+  .grid { display: grid; gap: 16px; }
+  .kpis { grid-template-columns: 1.4fr repeat(2, 1fr); }
+  .kpis2 { grid-template-columns: repeat(3, 1fr); margin-top: 16px; }
+  .two { grid-template-columns: 1fr 1fr; margin-top: 16px; }
+  @media (max-width: 860px) { .kpis, .kpis2, .two { grid-template-columns: 1fr; } }
+  .label { font-size: 13px; color: var(--ink-2); margin: 0 0 6px; }
+  .big { font-size: clamp(30px, 5vw, 42px); font-weight: 700; margin: 0; letter-spacing: -.01em; }
+  .mid { font-size: 26px; font-weight: 700; margin: 0; }
+  .note { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
+  .neg { color: var(--bad-text); }
+  .pos { color: var(--good-text); }
+  .bar { height: 10px; border-radius: 6px; background: var(--track); overflow: hidden; margin-top: 10px; }
+  .bar > span { display: block; height: 100%; background: var(--ok); border-radius: 6px; }
+  .dots { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .dots span { width: 16px; height: 16px; border-radius: 50%; background: var(--track); }
+  .dots span.on { background: var(--ok); }
+  h2 { font-size: 17px; margin: 0 0 2px; }
+  .chart-sub { font-size: 13px; color: var(--ink-2); margin: 0 0 12px; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); margin: 0 0 10px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .canvas { position: relative; height: 260px; }
+  details { margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+  summary { cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--grid); }
+  th { color: var(--ink-2); font-weight: 600; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  @media (max-width: 600px) { #t-gastos th:nth-child(2), #t-gastos td:nth-child(2) { display: none; } }
+  .scroll { overflow-x: auto; }
+  .full { margin-top: 16px; }
+  .aptos td, .aptos th { text-align: center; padding: 6px 4px; }
+  .aptos td:first-child, .aptos th:first-child { text-align: left; font-weight: 600; }
+  .st { display: inline-block; width: 26px; height: 22px; line-height: 22px; border-radius: 5px; font-size: 12px; }
+  .st.ok { background: var(--ok); color: #fff; }
+  .st.soporte { background: var(--sop); color: #fff; }
+  .st.declarado { background: var(--dec); color: #fff; }
+  .st.parcial { background: repeating-linear-gradient(45deg, var(--ok) 0 4px, var(--track) 4px 8px); color: var(--ink); }
+  .st.pendiente { background: transparent; box-shadow: inset 0 0 0 2px var(--bad); color: var(--bad-text); }
+  .st.futuro { background: transparent; box-shadow: inset 0 0 0 1px var(--axis); color: var(--muted); }
+  footer { margin-top: 28px; font-size: 12.5px; color: var(--muted); }
+  footer p { margin: 4px 0; }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Finanzas del edificio</p>
+    <h1 id="titulo"></h1>
+    <p class="sub" id="actualizado"></p>
+  </div>
+</header>
+
+<main class="wrap lift">
+  <div class="notice" id="aviso" hidden></div>
+
+  <section class="grid kpis">
+    <div class="card">
+      <p class="label">Saldo del edificio hoy</p>
+      <p class="big" id="k-saldo"></p>
+      <p class="note">Dinero disponible según ingresos y gastos verificados.</p>
+    </div>
+    <div class="card">
+      <p class="label" id="k-mes-label">Recaudo del mes</p>
+      <p class="mid" id="k-mes"></p>
+      <div class="bar" role="img" id="k-mes-bar-wrap"><span id="k-mes-bar"></span></div>
+      <p class="note" id="k-mes-nota"></p>
+    </div>
+    <div class="card">
+      <p class="label">Apartamentos al día</p>
+      <p class="mid" id="k-aldia"></p>
+      <div class="dots" id="k-dots" role="img"></div>
+      <p class="note">Sin cuotas vencidas pendientes (solo pagos verificados).</p>
+    </div>
+  </section>
+
+  <section class="grid kpis2">
+    <div class="card">
+      <p class="label">Cuotas vencidas por cobrar</p>
+      <p class="mid" id="k-cartera"></p>
+      <p class="note">Total del edificio, sin detalle por apartamento.</p>
+    </div>
+    <div class="card">
+      <p class="label">Pagos reportados por verificar</p>
+      <p class="mid" id="k-verificar"></p>
+      <p class="note">Soportes enviados o pagos declarados, aún sin confirmar.</p>
+    </div>
+    <div class="card">
+      <p class="label">Gasto mensual promedio</p>
+      <p class="mid" id="k-gasto"></p>
+      <p class="note">Promedio de los últimos 3 meses con gastos.</p>
+    </div>
+  </section>
+
+  <section class="grid two">
+    <div class="card">
+      <h2>Ingresos y gastos por mes</h2>
+      <p class="chart-sub">Movimientos verificados, en el mes en que ocurrieron.</p>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Ingresos</span><span><i style="background:var(--s2)"></i>Gastos</span></div>
+      <div class="canvas"><canvas id="c-flujo" aria-label="Ingresos y gastos por mes"></canvas></div>
+      <details><summary>Ver tabla</summary><div class="scroll" id="t-flujo"></div></details>
+    </div>
+    <div class="card">
+      <h2>Saldo del edificio</h2>
+      <p class="chart-sub">Al cierre de cada mes.</p>
+      <div class="canvas"><canvas id="c-saldo" aria-label="Saldo del edificio al cierre de cada mes"></canvas></div>
+    </div>
+  </section>
+
+  <section class="grid two">
+    <div class="card">
+      <h2>Recaudo de cuotas por mes</h2>
+      <p class="chart-sub">Porcentaje de las cuotas del mes, según la evidencia de pago.</p>
+      <div class="legend">
+        <span><i style="background:var(--ok)"></i>✅ Verificado</span>
+        <span><i style="background:var(--sop)"></i>📎 Soporte por verificar</span>
+        <span><i style="background:var(--dec)"></i>🗣 Declarado sin soporte</span>
+        <span><i style="background:var(--track)"></i>Sin pago</span>
+      </div>
+      <div class="canvas"><canvas id="c-recaudo" aria-label="Recaudo de cuotas por mes"></canvas></div>
+      <details><summary>Ver tabla</summary><div class="scroll" id="t-recaudo"></div></details>
+    </div>
+    <div class="card">
+      <h2>¿En qué se gasta?</h2>
+      <p class="chart-sub">Gastos pagados en los últimos 12 meses, por categoría.</p>
+      <div class="canvas"><canvas id="c-cat" aria-label="Gastos por categoría"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card full" id="s-gastos" hidden>
+    <h2 id="g-titulo"></h2>
+    <p class="chart-sub">Detalle de los gastos pagados.</p>
+    <div class="scroll" id="t-gastos"></div>
+  </section>
+
+  <section class="card full" id="s-aptos" hidden>
+    <h2>Pagos por apartamento</h2>
+    <p class="chart-sub">Solo el estado de cada mes; los valores individuales no se publican.</p>
+    <div class="legend">
+      <span><span class="st ok">✓</span> Verificado</span>
+      <span><span class="st soporte">📎</span> Soporte por verificar</span>
+      <span><span class="st declarado">🗣</span> Declarado</span>
+      <span><span class="st parcial">½</span> Parcial</span>
+      <span><span class="st pendiente">✗</span> Vencido sin pago</span>
+      <span><span class="st futuro">·</span> Aún no vence</span>
+    </div>
+    <div class="scroll" id="t-aptos"></div>
+  </section>
+
+  <footer>
+    <p><b>Privacidad.</b> Esta página muestra solo cifras globales del edificio. No publica nombres,
+      datos de contacto, saldos individuales ni información bancaria (Ley 1581 de 2012).
+      Cada propietario puede consultar su estado de cuenta con la administración.</p>
+    <p>Página informativa, de solo lectura. Las cifras oficiales son las aprobadas en asamblea.</p>
+  </footer>
+</main>
+
+<script>
+var D = <?!= datosJson ?>;
+
+(function () {
+  var COP = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+  var COPc = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', notation: 'compact', maximumFractionDigits: 1 });
+  var pct = function (a, b) { return b ? Math.round(a * 100 / b) : 0; };
+  var $ = function (id) { return document.getElementById(id); };
+  var css = function (v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); };
+  var esc = function (s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; };
+
+  // ---- Header & tiles ----
+  $('titulo').textContent = D.edificio;
+  $('actualizado').textContent = 'Actualizado: ' + D.actualizado;
+  if (D.aviso) { $('aviso').hidden = false; $('aviso').innerHTML = '<b>Nota:</b>' + esc(D.aviso); }
+  var k = D.kpis;
+  $('k-saldo').textContent = COP.format(k.saldo);
+  $('k-saldo').className = 'big' + (k.saldo < 0 ? ' neg' : '');
+  $('k-mes-label').textContent = 'Recaudo de ' + k.mesActual;
+  var p = pct(k.cobradoMes, k.esperadoMes);
+  $('k-mes').textContent = p + ' %';
+  $('k-mes-bar').style.width = Math.min(p, 100) + '%';
+  $('k-mes-bar-wrap').setAttribute('aria-label', p + ' % recaudado');
+  $('k-mes-nota').textContent = COP.format(k.cobradoMes) + ' de ' + COP.format(k.esperadoMes) + ' (verificado).';
+  $('k-aldia').textContent = k.aptosAlDia + ' de ' + k.aptosTotal;
+  var dots = '';
+  for (var i = 0; i < k.aptosTotal; i++) dots += '<span' + (i < k.aptosAlDia ? ' class="on"' : '') + '></span>';
+  $('k-dots').innerHTML = dots;
+  $('k-dots').setAttribute('aria-label', k.aptosAlDia + ' de ' + k.aptosTotal + ' apartamentos al día');
+  $('k-cartera').textContent = COP.format(k.carteraTotal);
+  $('k-verificar').textContent = COP.format(k.porVerificar);
+  $('k-gasto').textContent = COP.format(k.gastoPromedio);
+
+  // ---- Tables ----
+  function tabla(enc, filas, num) {
+    var h = '<table><thead><tr>' + enc.map(function (e, j) { return '<th' + (num[j] ? ' class="n"' : '') + '>' + esc(e) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    filas.forEach(function (f) {
+      h += '<tr>' + f.map(function (v, j) { return '<td' + (num[j] ? ' class="n"' : '') + '>' + esc(num[j] ? COP.format(v) : v) + '</td>'; }).join('') + '</tr>';
+    });
+    return h + '</tbody></table>';
+  }
+  $('t-flujo').innerHTML = tabla(['Mes', 'Ingresos', 'Gastos', 'Saldo'],
+    D.flujo.map(function (m) { return [m.etiqueta, m.ingresos, m.gastos, m.saldo]; }), [0, 1, 1, 1]);
+  $('t-recaudo').innerHTML = (function () {
+    var h = '<table><thead><tr><th>Mes</th><th class="n">Cuotas</th><th class="n">✅</th><th class="n">📎</th><th class="n">🗣</th><th class="n">Sin pago</th></tr></thead><tbody>';
+    D.recaudo.forEach(function (r) {
+      h += '<tr><td>' + esc(r.etiqueta) + '</td>' + [r.esperado, r.verificado, r.soporte, r.declarado, r.pendiente]
+        .map(function (v) { return '<td class="n">' + COP.format(v) + '</td>'; }).join('') + '</tr>';
+    });
+    return h + '</tbody></table>';
+  })();
+  if (D.gastosMes && D.gastosMes.filas.length) {
+    $('s-gastos').hidden = false;
+    $('g-titulo').textContent = 'Gastos de ' + D.gastosMes.mes;
+    var tot = D.gastosMes.filas.reduce(function (s, g) { return s + g.valor; }, 0);
+    $('t-gastos').innerHTML = tabla(['Categoría', 'Proveedor', 'Descripción', 'Valor'],
+      D.gastosMes.filas.map(function (g) { return [g.categoria, g.proveedor, g.descripcion, g.valor]; })
+        .concat([['Total', '', '', tot]]), [0, 0, 0, 1]);
+  }
+  if (D.aptos) {
+    $('s-aptos').hidden = false;
+    var sim = { ok: '✓', soporte: '📎', declarado: '🗣', parcial: '½', pendiente: '✗', futuro: '·', '': '' };
+    var h = '<table class="aptos"><thead><tr><th>Apto</th>' + D.aptos.meses.map(function (m) { return '<th>' + esc(m) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    D.aptos.filas.forEach(function (f) {
+      h += '<tr><td>' + esc(f.apto) + '</td>' + f.estados.map(function (e) {
+        return '<td>' + (e ? '<span class="st ' + e + '" title="' + e + '">' + sim[e] + '</span>' : '') + '</td>';
+      }).join('') + '</tr>';
+    });
+    $('t-aptos').innerHTML = h + '</tbody></table>';
+  }
+
+  // ---- Charts ----
+  if (!window.Chart) return;
+  var charts = [];
+  function base(stacked, pctAxis) {
+    return {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: css('--surface'), titleColor: css('--ink'), bodyColor: css('--ink-2'),
+          borderColor: css('--ring'), borderWidth: 1, padding: 10, boxPadding: 4, usePointStyle: true,
+          callbacks: { label: function (c) {
+            return ' ' + c.dataset.label + ': ' + (pctAxis ? c.parsed.y.toFixed(0) + ' %' : COP.format(c.parsed.y));
+          } }
+        }
+      },
+      scales: {
+        x: { stacked: stacked, grid: { display: false }, border: { color: css('--axis') }, ticks: { color: css('--muted') } },
+        y: {
+          stacked: stacked, max: pctAxis ? 100 : undefined, grid: { color: css('--grid') }, border: { display: false },
+          ticks: { color: css('--muted'), maxTicksLimit: 6, callback: function (v) { return pctAxis ? v + ' %' : COPc.format(v); } }
+        }
+      }
+    };
+  }
+  function dibujar() {
+    charts.forEach(function (c) { c.destroy(); });
+    charts = [];
+    var etiquetas = D.flujo.map(function (m) { return m.etiqueta; });
+    var barra = { borderRadius: 4, borderSkipped: 'start', maxBarThickness: 22 };
+
+    charts.push(new Chart($('c-flujo'), {
+      type: 'bar',
+      data: { labels: etiquetas, datasets: [
+        Object.assign({ label: 'Ingresos', data: D.flujo.map(function (m) { return m.ingresos; }), backgroundColor: css('--s1') }, barra),
+        Object.assign({ label: 'Gastos', data: D.flujo.map(function (m) { return m.gastos; }), backgroundColor: css('--s2') }, barra)
+      ] },
+      options: base(false, false)
+    }));
+
+    var saldoOpts = base(false, false);
+    saldoOpts.scales.y.grid.color = function (c) { return c.tick.value === 0 ? css('--axis') : css('--grid'); };
+    charts.push(new Chart($('c-saldo'), {
+      type: 'line',
+      data: { labels: etiquetas, datasets: [{
+        label: 'Saldo', data: D.flujo.map(function (m) { return m.saldo; }),
+        borderColor: css('--s1'), borderWidth: 2, pointRadius: 4, pointHoverRadius: 6,
+        pointBackgroundColor: css('--s1'), pointBorderColor: css('--surface'), pointBorderWidth: 2, tension: 0.25,
+        fill: { target: 'origin', above: 'rgba(42,120,214,0.10)', below: 'rgba(208,59,59,0.10)' }
+      }] },
+      options: saldoOpts
+    }));
+
+    var rp = function (campo) {
+      return D.recaudo.map(function (r) { return r.esperado ? r[campo] * 100 / r.esperado : 0; });
+    };
+    var seg = { borderColor: css('--surface'), borderWidth: { top: 2 }, borderSkipped: false, maxBarThickness: 26 };
+    charts.push(new Chart($('c-recaudo'), {
+      type: 'bar',
+      data: { labels: D.recaudo.map(function (r) { return r.etiqueta; }), datasets: [
+        Object.assign({ label: '✅ Verificado', data: rp('verificado'), backgroundColor: css('--ok') }, seg),
+        Object.assign({ label: '📎 Soporte', data: rp('soporte'), backgroundColor: css('--sop') }, seg),
+        Object.assign({ label: '🗣 Declarado', data: rp('declarado'), backgroundColor: css('--dec') }, seg),
+        Object.assign({ label: 'Sin pago', data: rp('pendiente'), backgroundColor: css('--track') }, seg)
+      ] },
+      options: base(true, true)
+    }));
+
+    var catOpts = base(false, false);
+    catOpts.indexAxis = 'y';
+    catOpts.interaction = { mode: 'nearest', axis: 'y', intersect: false };
+    catOpts.scales = {
+      x: { grid: { color: css('--grid') }, border: { display: false }, ticks: { color: css('--muted'), maxTicksLimit: 5, callback: function (v) { return COPc.format(v); } } },
+      y: { grid: { display: false }, border: { color: css('--axis') }, ticks: { color: css('--ink-2') } }
+    };
+    catOpts.plugins.tooltip.callbacks.label = function (c) { return ' ' + COP.format(c.parsed.x); };
+    charts.push(new Chart($('c-cat'), {
+      type: 'bar',
+      data: { labels: D.categorias.map(function (c) { return c.nombre; }), datasets: [{
+        label: 'Gasto', data: D.categorias.map(function (c) { return c.valor; }),
+        backgroundColor: css('--s1'), borderRadius: 4, borderSkipped: 'start', maxBarThickness: 26
+      }] },
+      options: catOpts
+    }));
+  }
+  dibujar();
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mq.addEventListener) mq.addEventListener('change', dibujar);
+  }
+})();
+</script>
+</body>
+</html>

@@ -16,6 +16,7 @@ function onOpen() {
     .addSeparator()
     .addItem('Calcular cuotas por coeficiente…', 'menuCalcularCuotas')
     .addItem('Actualizar instrucciones', 'actualizarInstrucciones')
+    .addItem('Enlace del panel público', 'menuEnlacePanel')
     .addItem('Configuración inicial', 'configuracionInicial')
     .addToUi();
 }
@@ -29,6 +30,16 @@ function menuProcesarCorreos() {
 function menuActualizarResumen() {
   actualizarResumen();
   SpreadsheetApp.getActive().getSheetByName(HOJAS.RESUMEN).activate();
+}
+
+function menuEnlacePanel() {
+  recordarHojaDashboard_();
+  var url = ScriptApp.getService().getUrl();
+  SpreadsheetApp.getUi().alert('Panel público',
+    url ? 'Comparta este enlace con los propietarios:\n\n' + url
+      : 'El panel aún no está publicado. En el editor de Apps Script: Implementar ▸ Nueva implementación ▸ ' +
+        'App web, ejecutar como "Yo", acceso "Cualquier persona". Luego vuelva a abrir este menú.',
+    SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
 function menuRegistrarAseo() {

@@ -109,6 +109,25 @@ el link del comprobante en `Soporte pago`). Solo lo pagado cuenta en el saldo.
   rehacerlo después de corregir datos: **EdEli ▸ Generar informe de un mes**.
 - **EdEli ▸ Enviar informe por correo** lo envía a `DESTINATARIOS_INFORME` (pide confirmación).
 
+### Panel público (página web)
+Una página con las finanzas del edificio que cualquier propietario puede abrir desde el
+celular, sin cuenta ni contraseña. Se actualiza sola (máximo cada 10 minutos).
+
+- **Publicarlo (una sola vez):** en la hoja, Extensiones ▸ Apps Script ▸ **Implementar ▸
+  Nueva implementación** ▸ tipo **App web**, ejecutar como **Yo**, acceso **Cualquier
+  persona** ▸ Implementar (autorice si lo pide). Luego **EdEli ▸ Enlace del panel público**
+  muestra el enlace para compartir.
+- **Después de un `clasp push`** con cambios del panel: Implementar ▸ Gestionar
+  implementaciones ▸ lápiz ▸ Versión: **Nueva versión** ▸ Implementar. El enlace no cambia.
+- **Qué muestra:** saldo, recaudo del mes, apartamentos al día (cantidad), cartera total,
+  ingresos y gastos por mes, recaudo por nivel de evidencia y gastos por categoría.
+- **Qué no muestra (privacidad, Ley 1581 de 2012):** nombres, correos, notas, saldos por
+  apartamento, la pestaña Banco ni los informes PDF.
+- **Config:** `DASHBOARD_AVISO` = nota arriba de la página (vacío = sin nota).
+  `DASHBOARD_POR_APTO` = `SI` muestra el estado de cada apartamento por mes (solo
+  colores, sin valores). Está en `NO` por defecto: aunque no muestre valores, identifica
+  qué apartamento está atrasado. Actívelo solo si la asamblea lo aprueba.
+
 ### Transparencia con los propietarios
 Comparta la hoja como **Lector** (solo ver) con los propietarios, o comparta solo la
 carpeta `Informes`. No les dé permiso de edición.

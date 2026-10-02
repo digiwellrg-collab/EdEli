@@ -246,6 +246,7 @@ function actualizarResumen() {
       Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd HH:mm') + '.']
   ]);
   est.getRange(ley, 1, 6, 1).setFontWeight('bold');
+  recordarHojaDashboard_();
   return f;
 }
 

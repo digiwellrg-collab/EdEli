@@ -38,7 +38,10 @@ var CONFIG_INICIAL = [
   ['BANCO_MONTO_MAX', 2000000, 'Alertas por encima de este valor se ignoran (no son cuotas). Vacío = sin límite.'],
   ['DIAS_CONCILIACION', 5, 'Días de diferencia máximos entre el soporte y la alerta del banco para emparejarlos.'],
   ['DESTINATARIOS_INFORME', '', 'Correos (separados por coma) que reciben el informe mensual.'],
-  ['CARPETA_DRIVE_ID', '', 'Lo llena la configuración inicial: carpeta raíz en Google Drive.']
+  ['CARPETA_DRIVE_ID', '', 'Lo llena la configuración inicial: carpeta raíz en Google Drive.'],
+  ['DASHBOARD_AVISO', 'Cuentas en reconstrucción desde octubre de 2025: las cifras son preliminares hasta que se registren todos los pagos y soportes.',
+    'Nota que aparece arriba en el panel público. Vacío = sin nota.'],
+  ['DASHBOARD_POR_APTO', 'NO', 'SI = el panel público muestra el estado de pago (solo colores, sin valores) de cada apartamento. Por privacidad, NO por defecto.']
 ];
 
 var APTOS_CONOCIDOS = ['101', '201', '202', '203', '301', '302', '303', '401', '402'];
@@ -88,6 +91,7 @@ function configuracionInicial() {
   crearCarpetas_();
   crearEtiquetas_();
   instalarDisparadores_();
+  recordarHojaDashboard_();
   var hayCuotas = leerTabla_(HOJAS.CUOTAS).filas.some(function (f) { return parseCOP_(f['Cuota mensual']); });
   if (!hayCuotas) {
     try { escribirCuotasCoeficiente_(getConfig_().MES_INICIO); } catch (e) { /* coefficients not filled in yet */ }
