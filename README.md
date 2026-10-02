@@ -22,3 +22,4 @@ Funciona con una **Google Sheet + Google Apps Script**: no requiere servidor ni 
 | [`docs/INSTRUCCIONES_PROPIETARIOS.md`](docs/INSTRUCCIONES_PROPIETARIOS.md) | Mensaje para enviar a los propietarios. |
 | [`tests/`](tests) | Pruebas (`node tests/run.js`). |
 | `Administracion/` | Documentos de referencia del edificio. |
+| [`Administracion/reglamento-1992.md`](Administracion/reglamento-1992.md) | Reglamento de copropiedad (transcripción OCR sin revisar; cotejar con el escaneo). |
