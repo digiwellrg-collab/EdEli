@@ -111,11 +111,11 @@ el link del comprobante en `Soporte pago`). Solo lo pagado cuenta en el saldo.
 
 ### Panel público (página web)
 Página con las finanzas del edificio que cualquier propietario puede abrir desde el
-celular, sin cuenta ni contraseña: **https://digiwellrg-collab.github.io/edeli-panel/**
+celular, sin cuenta ni contraseña: **https://edeli-ctg.github.io/**
 (también en Config `PANEL_URL` y en **EdEli ▸ Enlace del panel público**).
 
 Cómo funciona: la página está en GitHub Pages (repositorio público
-`digiwellrg-collab/edeli-panel`, que solo contiene la página; su fuente está en `web/`
+`edeli-ctg/edeli-ctg.github.io`, que solo contiene la página; su fuente está en `web/`
 de este repositorio). La página pide los datos a la app web de Apps Script
 (`…/exec?formato=json`), que solo entrega totales del edificio. Así funciona aunque el
 visitante tenga varias cuentas de Google abiertas, y no aparece el aviso de Google.
@@ -126,7 +126,7 @@ Los datos se actualizan solos (máximo cada 10 minutos).
   **No cree una implementación nueva**: cambiaría la dirección de los datos y habría que
   actualizar `API` en `web/index.html` y volver a publicar la página.
 - **Cambios en la página** (`web/index.html`): se publican copiando el archivo al
-  repositorio `edeli-panel` (GitHub Pages se actualiza en 1–2 minutos).
+  repositorio `edeli-ctg.github.io` (GitHub Pages se actualiza en 1–2 minutos).
 - **Qué muestra:** saldo, recaudo del mes, apartamentos al día (cantidad), cartera total,
   ingresos y gastos por mes, recaudo por nivel de evidencia y gastos por categoría.
 - **Qué no muestra (privacidad, Ley 1581 de 2012):** nombres, correos, notas, saldos por

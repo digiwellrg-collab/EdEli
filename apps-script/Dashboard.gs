@@ -1,6 +1,6 @@
 /**
  * Public dashboard data. The page itself is a static site on GitHub Pages
- * (repo digiwellrg-collab/edeli-panel, source in web/ of this repo) that reads
+ * (repo edeli-ctg/edeli-ctg.github.io, source in web/ of this repo) that reads
  * this web app as JSON: ?formato=json. Serving the page from outside Google
  * avoids Google's multi-account bug ("unable to open the file") and the
  * Apps Script banner. Deploy: Implementar ▸ Nueva implementación ▸ App web,
@@ -13,7 +13,7 @@
  */
 
 var CACHE_DASHBOARD = 'dashboard-v1';
-var PANEL_URL_DEFECTO = 'https://digiwellrg-collab.github.io/edeli-panel/';
+var PANEL_URL_DEFECTO = 'https://edeli-ctg.github.io/';
 
 function doGet(e) {
   var formato = e && e.parameter && e.parameter.formato;
