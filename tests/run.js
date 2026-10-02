@@ -316,6 +316,8 @@ test('public dashboard: building totals only, no names or per-apartment amounts'
   assert.strictEqual(out.flujo.length, 3);
   out.recaudo.forEach((r) => assert.strictEqual(r.verificado + r.soporte + r.declarado + r.pendiente, r.esperado));
   assert.ok(out.aviso.length > 0);
+  assert.strictEqual(out.composicion.categorias.length, 5);
+  out.composicion.meses.forEach((m) => assert.strictEqual(m.valores.reduce((a, b) => a + b, 0), m.total));
   // Opt-in grid: states only, never amounts.
   ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5, DASHBOARD_POR_APTO: 'si', DASHBOARD_AVISO: '' });
   const g = ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-20'));

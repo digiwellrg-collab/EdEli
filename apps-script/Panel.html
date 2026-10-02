@@ -24,6 +24,7 @@
     --sop: #2a78d6;         /* soporte por verificar */
     --dec: #ec835a;         /* declarado sin soporte */
     --track: #e1e0d9;       /* sin pago */
+    --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100; --c5: #e87ba4;  /* categorías de gasto */
     --bad: #d03b3b;
     --good-text: #006300;
     --bad-text: #b42c2c;
@@ -37,6 +38,7 @@
       --grid: #2c2c2a; --axis: #383835; --ring: rgba(255, 255, 255, 0.10);
       --brand: #16385a; --s1: #3987e5; --s2: #d95926;
       --ok: #0ca30c; --sop: #3987e5; --dec: #d95926; --track: #383835; --bad: #e66767;
+      --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181;
       --good-text: #0ca30c; --bad-text: #e66767; --notice: #2a2414; --notice-ring: #5c4a1a;
     }
   }
@@ -46,6 +48,7 @@
     --grid: #2c2c2a; --axis: #383835; --ring: rgba(255, 255, 255, 0.10);
     --brand: #16385a; --s1: #3987e5; --s2: #d95926;
     --ok: #0ca30c; --sop: #3987e5; --dec: #d95926; --track: #383835; --bad: #e66767;
+      --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181;
     --good-text: #0ca30c; --bad-text: #e66767; --notice: #2a2414; --notice-ring: #5c4a1a;
   }
   * { box-sizing: border-box; }
@@ -93,6 +96,7 @@
   .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); margin: 0 0 10px; }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
   .canvas { position: relative; height: 260px; }
+  .canvas.tall { height: 300px; }
   details { margin-top: 10px; font-size: 13px; color: var(--ink-2); }
   summary { cursor: pointer; }
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
@@ -200,6 +204,14 @@
     </div>
   </section>
 
+  <section class="card full">
+    <h2>Composición del gasto por mes</h2>
+    <p class="chart-sub">Qué porcentaje del gasto de cada mes fue a cada categoría (gastos pagados).</p>
+    <div class="legend" id="l-comp"></div>
+    <div class="canvas tall"><canvas id="c-comp" aria-label="Composición del gasto por mes"></canvas></div>
+    <details><summary>Ver tabla</summary><div class="scroll" id="t-comp"></div></details>
+  </section>
+
   <section class="card full" id="s-gastos" hidden>
     <h2 id="g-titulo"></h2>
     <p class="chart-sub">Detalle de los gastos pagados.</p>
@@ -279,6 +291,26 @@ var D = <?!= datosJson ?>;
     });
     return h + '</tbody></table>';
   })();
+  var CC = ['--c1', '--c2', '--c3', '--c4', '--c5'];
+  var comp = D.composicion;
+  var usadas = comp.categorias.map(function (c, i) {
+    return { nombre: c, i: i, total: comp.meses.reduce(function (s, m) { return s + m.valores[i]; }, 0) };
+  }).filter(function (c) { return c.total > 0; });
+  var mesesComp = comp.meses.filter(function (m) { return m.total > 0; });
+  $('l-comp').innerHTML = usadas.map(function (c) {
+    return '<span><i style="background:var(' + CC[c.i] + ')"></i>' + esc(c.nombre) + '</span>';
+  }).join('');
+  $('t-comp').innerHTML = (function () {
+    var h = '<table><thead><tr><th>Mes</th>' + usadas.map(function (c) { return '<th class="n">' + esc(c.nombre) + '</th>'; }).join('') +
+      '<th class="n">Total</th></tr></thead><tbody>';
+    mesesComp.forEach(function (m) {
+      h += '<tr><td>' + esc(m.etiqueta) + '</td>' + usadas.map(function (c) {
+        return '<td class="n">' + COP.format(m.valores[c.i]) + ' (' + pct(m.valores[c.i], m.total) + ' %)</td>';
+      }).join('') + '<td class="n">' + COP.format(m.total) + '</td></tr>';
+    });
+    return h + '</tbody></table>';
+  })();
+
   if (D.gastosMes && D.gastosMes.filas.length) {
     $('s-gastos').hidden = false;
     $('g-titulo').textContent = 'Gastos de ' + D.gastosMes.mes;
@@ -368,6 +400,23 @@ var D = <?!= datosJson ?>;
       options: base(true, true)
     }));
 
+    var compOpts = base(true, true);
+    compOpts.plugins.tooltip.callbacks.label = function (c) {
+      var m = mesesComp[c.dataIndex];
+      return ' ' + c.dataset.label + ': ' + c.parsed.y.toFixed(0) + ' % (' + COP.format(m.valores[c.dataset.idx]) + ')';
+    };
+    compOpts.plugins.tooltip.filter = function (c) { return c.parsed.y > 0; };
+    charts.push(new Chart($('c-comp'), {
+      type: 'bar',
+      data: { labels: mesesComp.map(function (m) { return m.etiqueta; }), datasets: usadas.map(function (c) {
+        return Object.assign({
+          label: c.nombre, idx: c.i, backgroundColor: css(CC[c.i]),
+          data: mesesComp.map(function (m) { return m.total ? m.valores[c.i] * 100 / m.total : 0; })
+        }, seg);
+      }) },
+      options: compOpts
+    }));
+
     var catOpts = base(false, false);
     catOpts.indexAxis = 'y';
     catOpts.interaction = { mode: 'nearest', axis: 'y', intersect: false };
@@ -380,7 +429,10 @@ var D = <?!= datosJson ?>;
       type: 'bar',
       data: { labels: D.categorias.map(function (c) { return c.nombre; }), datasets: [{
         label: 'Gasto', data: D.categorias.map(function (c) { return c.valor; }),
-        backgroundColor: css('--s1'), borderRadius: 4, borderSkipped: 'start', maxBarThickness: 26
+        backgroundColor: D.categorias.map(function (c) {
+          var i = comp.categorias.indexOf(c.nombre);
+          return css(CC[i >= 0 ? i : CC.length - 1]);
+        }), borderRadius: 4, borderSkipped: 'start', maxBarThickness: 26
       }] },
       options: catOpts
     }));

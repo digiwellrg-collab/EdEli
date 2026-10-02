@@ -36,6 +36,25 @@ function recordarHojaDashboard_() {
 }
 
 /**
+ * Each month's expenses by category, in a fixed order so every category keeps
+ * its colour on the page. Unknown categories fold into "Otro gasto".
+ */
+function composicionGastos_(meses, etiqueta) {
+  var orden = [CATEGORIA.AGUA, CATEGORIA.ENERGIA, CATEGORIA.ASEO, CATEGORIA.REPARACION, CATEGORIA.OTRO];
+  return {
+    categorias: orden,
+    meses: meses.map(function (m) {
+      var valores = orden.map(function () { return 0; });
+      Object.keys(m.porCategoria).forEach(function (k) {
+        var i = orden.indexOf(k);
+        valores[i >= 0 ? i : orden.length - 1] += m.porCategoria[k] || 0;
+      });
+      return { etiqueta: etiqueta(m.mes), total: m.gastos, valores: valores };
+    })
+  };
+}
+
+/**
  * Pure: everything the page shows, from calcularFinanzas_(). Only aggregates;
  * no names or per-apartment amounts leave this function.
  */
@@ -105,6 +124,7 @@ function datosDashboard_(f, hoy, ahora) {
     }),
     recaudo: recaudo,
     categorias: categorias,
+    composicion: composicionGastos_(meses, etiqueta),
     gastosMes: mesGasto ? {
       mes: nombreMes_(mesGasto.mes),
       filas: mesGasto.detalleGastos.map(function (g) {
