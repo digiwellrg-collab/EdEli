@@ -4,7 +4,7 @@
 <base target="_top">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<?!= incluir_('ChartJs') ?>
 <style>
   :root {
     color-scheme: light;
@@ -332,8 +332,20 @@ var D = <?!= datosJson ?>;
   }
 
   // ---- Charts ----
-  if (!window.Chart) return;
+  function falla(id, msg) {
+    var c = $(id);
+    if (c && c.parentNode) c.parentNode.innerHTML = '<p class="note">No se pudo dibujar el gráfico: ' + esc(msg) + '</p>';
+  }
+  function grafico(id, cfg) {
+    try { charts.push(new Chart($(id), cfg)); } catch (e) { falla(id, e && e.message ? e.message : String(e)); }
+  }
   var charts = [];
+  if (!window.Chart) {
+    ['c-flujo', 'c-saldo', 'c-recaudo', 'c-comp', 'c-cat'].forEach(function (id) {
+      falla(id, 'la librería de gráficos no cargó. Recargue la página; las tablas "Ver tabla" tienen los mismos datos.');
+    });
+    return;
+  }
   function base(stacked, pctAxis) {
     return {
       responsive: true, maintainAspectRatio: false, animation: { duration: 500 },
@@ -363,18 +375,18 @@ var D = <?!= datosJson ?>;
     var etiquetas = D.flujo.map(function (m) { return m.etiqueta; });
     var barra = { borderRadius: 4, borderSkipped: 'start', maxBarThickness: 22 };
 
-    charts.push(new Chart($('c-flujo'), {
+    grafico('c-flujo', {
       type: 'bar',
       data: { labels: etiquetas, datasets: [
         Object.assign({ label: 'Ingresos', data: D.flujo.map(function (m) { return m.ingresos; }), backgroundColor: css('--s1') }, barra),
         Object.assign({ label: 'Gastos', data: D.flujo.map(function (m) { return m.gastos; }), backgroundColor: css('--s2') }, barra)
       ] },
       options: base(false, false)
-    }));
+    });
 
     var saldoOpts = base(false, false);
     saldoOpts.scales.y.grid.color = function (c) { return c.tick.value === 0 ? css('--axis') : css('--grid'); };
-    charts.push(new Chart($('c-saldo'), {
+    grafico('c-saldo', {
       type: 'line',
       data: { labels: etiquetas, datasets: [{
         label: 'Saldo', data: D.flujo.map(function (m) { return m.saldo; }),
@@ -383,13 +395,13 @@ var D = <?!= datosJson ?>;
         fill: { target: 'origin', above: 'rgba(42,120,214,0.10)', below: 'rgba(208,59,59,0.10)' }
       }] },
       options: saldoOpts
-    }));
+    });
 
     var rp = function (campo) {
       return D.recaudo.map(function (r) { return r.esperado ? r[campo] * 100 / r.esperado : 0; });
     };
     var seg = { borderColor: css('--surface'), borderWidth: { top: 2 }, borderSkipped: false, maxBarThickness: 26 };
-    charts.push(new Chart($('c-recaudo'), {
+    grafico('c-recaudo', {
       type: 'bar',
       data: { labels: D.recaudo.map(function (r) { return r.etiqueta; }), datasets: [
         Object.assign({ label: '✅ Verificado', data: rp('verificado'), backgroundColor: css('--ok') }, seg),
@@ -398,7 +410,7 @@ var D = <?!= datosJson ?>;
         Object.assign({ label: 'Sin pago', data: rp('pendiente'), backgroundColor: css('--track') }, seg)
       ] },
       options: base(true, true)
-    }));
+    });
 
     var compOpts = base(true, true);
     compOpts.plugins.tooltip.callbacks.label = function (c) {
@@ -406,7 +418,7 @@ var D = <?!= datosJson ?>;
       return ' ' + c.dataset.label + ': ' + c.parsed.y.toFixed(0) + ' % (' + COP.format(m.valores[c.dataset.idx]) + ')';
     };
     compOpts.plugins.tooltip.filter = function (c) { return c.parsed.y > 0; };
-    charts.push(new Chart($('c-comp'), {
+    grafico('c-comp', {
       type: 'bar',
       data: { labels: mesesComp.map(function (m) { return m.etiqueta; }), datasets: usadas.map(function (c) {
         return Object.assign({
@@ -415,7 +427,7 @@ var D = <?!= datosJson ?>;
         }, seg);
       }) },
       options: compOpts
-    }));
+    });
 
     var catOpts = base(false, false);
     catOpts.indexAxis = 'y';
@@ -425,7 +437,7 @@ var D = <?!= datosJson ?>;
       y: { grid: { display: false }, border: { color: css('--axis') }, ticks: { color: css('--ink-2') } }
     };
     catOpts.plugins.tooltip.callbacks.label = function (c) { return ' ' + COP.format(c.parsed.x); };
-    charts.push(new Chart($('c-cat'), {
+    grafico('c-cat', {
       type: 'bar',
       data: { labels: D.categorias.map(function (c) { return c.nombre; }), datasets: [{
         label: 'Gasto', data: D.categorias.map(function (c) { return c.valor; }),
@@ -435,9 +447,9 @@ var D = <?!= datosJson ?>;
         }), borderRadius: 4, borderSkipped: 'start', maxBarThickness: 26
       }] },
       options: catOpts
-    }));
+    });
   }
-  dibujar();
+  try { dibujar(); } catch (e) { ['c-flujo', 'c-saldo', 'c-recaudo', 'c-comp', 'c-cat'].forEach(function (id) { falla(id, e.message || String(e)); }); }
   if (window.matchMedia) {
     var mq = window.matchMedia('(prefers-color-scheme: dark)');
     if (mq.addEventListener) mq.addEventListener('change', dibujar);

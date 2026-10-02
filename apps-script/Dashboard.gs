@@ -28,6 +28,11 @@ function doGet() {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
+/** Raw content of another HTML file in the project (used to inline Chart.js). */
+function incluir_(nombre) {
+  return HtmlService.createHtmlOutputFromFile(nombre).getContent();
+}
+
 /** Remembers the spreadsheet (the web app has no "active" one) and refreshes the page data. */
 function recordarHojaDashboard_() {
   var ss = SpreadsheetApp.getActive();
