@@ -67,16 +67,21 @@ y `clasp login` con la cuenta dueña de la hoja. Si PowerShell bloquea `clasp`:
 ## 3. Flujo mensual
 
 ### Ingresos (cuotas)
-1. El propietario paga y envía el soporte a **juglic.co@gmail.com** con el asunto
-   `Soporte | Apto 401 | 2026-02 | 120000` (ver [instrucciones para propietarios](INSTRUCCIONES_PROPIETARIOS.md)).
-2. En máximo una hora aparece una fila en **Pagos**:
+1. **Transferencia por el valor exacto** (lo normal): llega la alerta de Bancolombia y en
+   máximo una hora el pago queda `Verificado` solo, en el mes pendiente más antiguo del
+   apartamento. El propietario no tiene que enviar nada.
+2. **Efectivo** (soporte obligatorio) o **transferencia por otro valor**: el propietario
+   envía el soporte a **juglic.co@gmail.com** con el asunto
+   `Soporte | Apto 401 | 2026-02 | 100768` (ver [instrucciones para propietarios](INSTRUCCIONES_PROPIETARIOS.md)).
+   En máximo una hora aparece una fila en **Pagos**:
    - amarilla `Pendiente verificación`: se leyó todo bien;
    - roja `Revisar`: faltó apartamento, valor o adjunto. Complete los datos a mano.
-   El soporte queda en `Drive/EdEli/Soportes pagos/AAAA-MM/`.
-3. Verifique contra el extracto bancario (o el dinero recibido) y cambie el estado a
-   **Verificado**. Solo lo verificado cuenta en los informes.
-4. **Pagos en efectivo**: agregue la fila a mano con `Método = Efectivo`, y en `Soporte`
-   el link a la foto del recibo firmado.
+   El soporte queda en `Drive/EdEli/Soportes pagos/AAAA-MM/`. Una transferencia se
+   verifica sola al cruzar con el banco; el efectivo lo verifica usted con el recibo
+   firmado (cambie `Método = Efectivo` y el estado a **Verificado**).
+3. Si el propietario pagó en efectivo y no envió el correo, agregue la fila a mano con
+   `Método = Efectivo` y en `Soporte` el link a la foto del recibo firmado.
+4. Solo lo verificado cuenta en los informes.
 5. Si un pago cubre varios meses, divídalo en una fila por mes (`Mes aplicado`).
 6. **Arriendo de parqueadero** (p. ej. Sr. César): fila en Pagos con `Tipo = Arriendo parqueadero`
    y en `Apto` escriba `PARQ`. Cuenta como ingreso del edificio, no en el estado de cuenta.
