@@ -35,7 +35,7 @@ function prepararCaptura() {
   sh.getRange(r, 1, 5, 1).setValues([
     ['Cómo usar: escriba x en cada mes pagado (= la cuota de ese mes) o el valor si fue distinto.'],
     ['Crédito: gasto del edificio pagado por el propietario (ej. factura de Acuacar). Se descuenta de lo que debe y se registra también en Gastos.'],
-    ['Nota: queda guardada en Apartamentos ▸ Notas y aparece en el Historial.'],
+    ['Nota: queda guardada en Apartamentos ▸ Notas y aparece en Estado de cuenta.'],
     ['Luego: EdEli ▸ Registrar captura. Pregunta si es Declarado (sin soporte) o Verificado, y limpia esta hoja.'],
     ['Los meses que ya tienen pago registrado se omiten, para no duplicar.']
   ]).setFontStyle('italic');

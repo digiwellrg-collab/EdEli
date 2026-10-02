@@ -12,7 +12,6 @@ var HOJAS = {
   GASTOS: 'Gastos',
   RESUMEN: 'Resumen',
   ESTADO: 'Estado de cuenta',
-  HISTORIAL: 'Historial de pagos',
   CAPTURA: 'Captura',
   BANCO: 'Banco',
   INSTRUCCIONES: 'Instrucciones'

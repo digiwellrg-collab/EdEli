@@ -280,6 +280,29 @@ test('history levels: verified, soporte, declared', () => {
   tablas.Pagos.pop();
 });
 
+test('estado de cuenta row: evidence colours, notes and both balances', () => {
+  const cfg = { DIAS_ANTES_FIN_MES: 5 };
+  const c = {
+    saldoAnterior: 50000, pendiente: 150000, otros: 0, notas: '',
+    celdas: [
+      { mes: '2025-10', cuota: 100000, multa: 0, pagado: 100000, pagadoMulta: 0, conSoporte: 0, declarado: 0 },
+      { mes: '2025-11', cuota: 100000, multa: 0, pagado: 0, pagadoMulta: 0, conSoporte: 100000, declarado: 0 },
+      { mes: '2025-12', cuota: 100000, multa: 0, pagado: 0, pagadoMulta: 0, conSoporte: 0, declarado: 50000 },
+      { mes: '2026-01', cuota: 100000, multa: 0, pagado: 0, pagadoMulta: 0, conSoporte: 0, declarado: 0 },
+      { mes: '2026-02', cuota: 100000, multa: 0, pagado: 0, pagadoMulta: 0, conSoporte: 0, declarado: 0 },
+      { mes: '2026-03', cuota: 100000, multa: 0, pagado: 0, pagadoMulta: 0, conSoporte: 0, declarado: 0 }
+    ]
+  };
+  const r = ctx.filaEstado_(c, cfg, '2026-02', d('2026-02-10'));
+  // March is after hoy -> not shown; February not yet due -> white.
+  assert.strictEqual(JSON.stringify(r.celdas), JSON.stringify([100000, 100000, 50000, 0, 0]));
+  assert.strictEqual(JSON.stringify(r.colores), JSON.stringify(['#d9ead3', '#cfe2f3', '#fff2cc', '#f4cccc', null]));
+  assert.ok(r.notas[1].indexOf('Soporte por verificar') >= 0 && r.notas[3] === '');
+  assert.strictEqual(r.cuotas, 400000);
+  assert.strictEqual(r.debe, 50000 + 400000 - 100000);
+  assert.strictEqual(r.debe - r.porVerificar, 200000);
+});
+
 test('captura grid becomes payments, credits and notes', () => {
   ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
   const f = ctx.calcularFinanzas_('2025-12');

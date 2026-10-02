@@ -97,8 +97,9 @@ el link del comprobante en `Soporte pago`). Solo lo pagado cuenta en el saldo.
 ### Informe
 - **Resumen**: una fila por mes: saldo inicial, ingresos, gastos por categoría, saldo final
   (que pasa al mes siguiente) y pendientes.
-- **Estado de cuenta**: cuadrícula apartamento × mes (verde pagado, amarillo parcial,
-  rojo sin pago) y lo que debe cada uno a hoy.
+- **Estado de cuenta**: cuadrícula apartamento × mes con lo pagado (verde verificado, azul
+  soporte por verificar, naranja declarado sin soporte, amarillo parcial, rojo sin pago), lo que
+  debe cada uno a hoy y lo que debería si se acepta lo reportado.
 - El día 1 se genera solo el PDF del mes anterior en `Drive/EdEli/Informes/`. Para
   rehacerlo después de corregir datos: **EdEli ▸ Generar informe de un mes**.
 - **EdEli ▸ Enviar informe por correo** lo envía a `DESTINATARIOS_INFORME` (pide confirmación).

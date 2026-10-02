@@ -59,7 +59,7 @@ function configuracionInicial() {
     sh.getRange(1, 1, 1, h.length).setValues([h]).setFontWeight('bold').setBackground('#e8eaed');
     sh.setFrozenRows(1);
   });
-  [HOJAS.INSTRUCCIONES, HOJAS.RESUMEN, HOJAS.ESTADO, HOJAS.HISTORIAL].forEach(function (nombre) {
+  [HOJAS.INSTRUCCIONES, HOJAS.RESUMEN, HOJAS.ESTADO].forEach(function (nombre) {
     if (!ss.getSheetByName(nombre)) ss.insertSheet(nombre);
   });
   var hoja1 = ss.getSheetByName('Hoja 1') || ss.getSheetByName('Sheet1') || ss.getSheetByName('Hoja1');

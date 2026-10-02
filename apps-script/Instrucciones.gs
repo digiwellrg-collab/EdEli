@@ -62,7 +62,7 @@ function actualizarInstrucciones() {
   seccion('4. Qué pasa después');
   linea('1', 'El sistema lee su correo (cada hora) y guarda el soporte en la carpeta del edificio.');
   linea('2', 'Cuando la transferencia aparece en la cuenta, el pago queda Verificado automáticamente.');
-  linea('3', 'Puede ver su estado en la pestaña "Estado de cuenta": verde = pagado, amarillo = parcial, rojo = pendiente.');
+  linea('3', 'Puede ver su estado en la pestaña "Estado de cuenta": verde = pagado, azul = soporte por verificar, amarillo = parcial, rojo = pendiente. Pase el cursor sobre un mes para ver el detalle.');
   linea('4', 'Cada mes se publica el informe con ingresos, gastos y saldo del edificio.');
   linea('Efectivo', 'Si paga en efectivo, pida recibo firmado a la administración; se registra a mano.');
 
