@@ -1,17 +1,36 @@
 /**
- * Public dashboard: a read-only web page (Apps Script web app) with the
- * building's finances. Deploy: Implementar ▸ Nueva implementación ▸ App web,
+ * Public dashboard data. The page itself is a static site on GitHub Pages
+ * (repo digiwellrg-collab/edeli-panel, source in web/ of this repo) that reads
+ * this web app as JSON: ?formato=json. Serving the page from outside Google
+ * avoids Google's multi-account bug ("unable to open the file") and the
+ * Apps Script banner. Deploy: Implementar ▸ Nueva implementación ▸ App web,
  * ejecutar como "Yo", acceso "Cualquier persona".
  *
- * Privacy (Ley 1581 de 2012, habeas data): the page never shows owners'
+ * Privacy (Ley 1581 de 2012, habeas data): the data never includes owners'
  * names, emails, notes, individual debts, the Banco tab or the PDF reports.
- * It shows building totals only. The per-apartment colour grid is OFF unless
- * Config DASHBOARD_POR_APTO = SI, and even then shows colours, not amounts.
+ * Building totals only. The per-apartment colour grid is OFF unless Config
+ * DASHBOARD_POR_APTO = SI, and even then carries states, not amounts.
  */
 
 var CACHE_DASHBOARD = 'dashboard-v1';
+var PANEL_URL_DEFECTO = 'https://digiwellrg-collab.github.io/edeli-panel/';
 
-function doGet() {
+function doGet(e) {
+  var formato = e && e.parameter && e.parameter.formato;
+  if (formato === 'json') {
+    return ContentService.createTextOutput(jsonDashboard_()).setMimeType(ContentService.MimeType.JSON);
+  }
+  // Old links: point people to the public page.
+  var url = panelUrl_();
+  return HtmlService.createHtmlOutput(
+    '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+    '<div style="font:16px system-ui,sans-serif;max-width:480px;margin:48px auto;padding:0 16px;text-align:center">' +
+    '<p>El panel de finanzas del edificio se mudó a:</p>' +
+    '<p><a href="' + url + '" target="_top" style="font-size:18px">' + url + '</a></p></div>')
+    .setTitle('Finanzas del edificio');
+}
+
+function jsonDashboard_() {
   var json = CacheService.getScriptCache().get(CACHE_DASHBOARD);
   if (!json) {
     var id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
@@ -20,17 +39,15 @@ function doGet() {
     json = JSON.stringify(datosDashboard_(f, mesDe_(new Date()), new Date()));
     CacheService.getScriptCache().put(CACHE_DASHBOARD, json, 600);
   }
-  var t = HtmlService.createTemplateFromFile('Panel');
-  // Escape "<" so the data can never close the <script> tag it lives in.
-  t.datosJson = json.replace(/</g, '\\u003c');
-  return t.evaluate()
-    .setTitle(JSON.parse(json).edificio + ' – Finanzas')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  return json;
 }
 
-/** Raw content of another HTML file in the project (used to inline Chart.js). */
-function incluir_(nombre) {
-  return HtmlService.createHtmlOutputFromFile(nombre).getContent();
+function panelUrl_() {
+  var id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+  if (id && !SpreadsheetApp.getActive()) SpreadsheetApp.setActiveSpreadsheet(SpreadsheetApp.openById(id));
+  var url = '';
+  try { url = String(getConfig_().PANEL_URL || ''); } catch (err) { url = ''; }
+  return url || PANEL_URL_DEFECTO;
 }
 
 /** Remembers the spreadsheet (the web app has no "active" one) and refreshes the page data. */

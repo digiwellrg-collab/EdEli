@@ -39,6 +39,7 @@ var CONFIG_INICIAL = [
   ['DIAS_CONCILIACION', 5, 'Días de diferencia máximos entre el soporte y la alerta del banco para emparejarlos.'],
   ['DESTINATARIOS_INFORME', '', 'Correos (separados por coma) que reciben el informe mensual.'],
   ['CARPETA_DRIVE_ID', '', 'Lo llena la configuración inicial: carpeta raíz en Google Drive.'],
+  ['PANEL_URL', 'https://digiwellrg-collab.github.io/edeli-panel/', 'Dirección del panel público para los propietarios.'],
   ['DASHBOARD_AVISO', 'Cuentas en reconstrucción desde octubre de 2025: las cifras son preliminares hasta que se registren todos los pagos y soportes.',
     'Nota que aparece arriba en el panel público. Vacío = sin nota.'],
   ['DASHBOARD_POR_APTO', 'NO', 'SI = el panel público muestra el estado de pago (solo colores, sin valores) de cada apartamento. Por privacidad, NO por defecto.']

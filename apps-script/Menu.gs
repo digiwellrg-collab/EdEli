@@ -34,11 +34,12 @@ function menuActualizarResumen() {
 
 function menuEnlacePanel() {
   recordarHojaDashboard_();
-  var url = ScriptApp.getService().getUrl();
+  var datos = ScriptApp.getService().getUrl();
   SpreadsheetApp.getUi().alert('Panel público',
-    url ? 'Comparta este enlace con los propietarios:\n\n' + url
-      : 'El panel aún no está publicado. En el editor de Apps Script: Implementar ▸ Nueva implementación ▸ ' +
-        'App web, ejecutar como "Yo", acceso "Cualquier persona". Luego vuelva a abrir este menú.',
+    'Enlace para los propietarios:\n' + panelUrl_() + '\n\n' +
+    (datos ? 'Datos del panel (para la configuración de la página):\n' + datos + '?formato=json'
+      : 'Los datos aún no están publicados. En el editor de Apps Script: Implementar ▸ Nueva implementación ▸ ' +
+        'App web, ejecutar como "Yo", acceso "Cualquier persona".'),
     SpreadsheetApp.getUi().ButtonSet.OK);
 }
 

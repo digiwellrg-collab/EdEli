@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<base target="_top">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<?!= incluir_('ChartJs') ?>
+<title>Edificio Elizabeth – Finanzas</title>
+<meta name="description" content="Finanzas del Edificio Elizabeth (Cartagena): saldo, recaudo y gastos.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231f4e79'/%3E%3Cpath d='M9 25V9h14v16M13 13h2M17 13h2M13 17h2M17 17h2M15 25v-4h2v4' stroke='%23fff' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>window.Chart || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>');</script>
 <style>
   :root {
     color-scheme: light;
@@ -124,11 +128,11 @@
   <div class="wrap">
     <p class="eyebrow">Finanzas del edificio</p>
     <h1 id="titulo"></h1>
-    <p class="sub" id="actualizado"></p>
+    <p class="sub" id="actualizado">Cargando datos…</p>
   </div>
 </header>
 
-<main class="wrap lift">
+<main class="wrap lift" id="contenido" hidden>
   <div class="notice" id="aviso" hidden></div>
 
   <section class="grid kpis">
@@ -241,9 +245,20 @@
 </main>
 
 <script>
-var D = <?!= datosJson ?>;
+// Datos: la app web de Apps Script de la hoja EdEli Cuentas (solo totales del edificio).
+var API = 'https://script.google.com/macros/s/AKfycbxQdaTAI1ap-vlnBgcjtSG2n6yV5kBix-jRAn2Uiv4rOlnptA2MOcfF9XsC8zpsOMDxew/exec?formato=json';
 
-(function () {
+function errorCarga() {
+  document.getElementById('actualizado').textContent =
+    'No se pudieron cargar los datos. Revise su conexión y recargue la página.';
+}
+// credentials: 'omit' = sin la sesión de Google del visitante (evita el error de varias cuentas).
+fetch(API, { credentials: 'omit' })
+  .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(function (D) { document.getElementById('contenido').hidden = false; pintar(D); })
+  .catch(errorCarga);
+
+function pintar(D) {
   var COP = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
   var COPc = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', notation: 'compact', maximumFractionDigits: 1 });
   var pct = function (a, b) { return b ? Math.round(a * 100 / b) : 0; };
@@ -454,7 +469,7 @@ var D = <?!= datosJson ?>;
     var mq = window.matchMedia('(prefers-color-scheme: dark)');
     if (mq.addEventListener) mq.addEventListener('change', dibujar);
   }
-})();
+}
 </script>
 </body>
 </html>
