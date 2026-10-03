@@ -15,22 +15,17 @@
 
 ## ⭐ Secciones clave
 
-Seleccionadas según los temas de tus notas (cuota por coeficiente y Art. 19.11, reforma del reglamento, linderos invertidos, la adición de la primera planta, Airbnb, actas, cuenta bancaria y seguros). En el texto van marcadas con ⭐.
+Organizadas según los seis puntos y las referencias de las notas «EdEli Board Long Chat». Las citas entre comillas son textuales del reglamento; en el texto completo estos artículos van marcados con ⭐.
 
-| Tema | Artículo | Lo que dice el reglamento |
+| Tema | Artículos | Lo que dice el reglamento |
 |---|---|---|
-| Cuota de administración | [Art. 19º, num. 11](#-art-19o-funciones-de-la-asamblea) | La asamblea fija la cuota «a cada uno de los propietarios, **de acuerdo a los coeficientes de copropiedad**»; función delegable en el Administrador. |
-| Coeficientes | [Art. 9º](#-art-9o-determinacion-de-los-coeficientes-de-copropiedad-en-base-a-las-areas-totales-del-edificio-que-ademas-habran-de-servir-para-el-reparto-de-los-gastos-generales-que-este-ocasione-en-su-mantenimiento-aseo-vigilancia-etc-asi-como-al-pago-de-las-primas-de-seguros) | El propio título dice que los coeficientes «habrán de servir para el **reparto de los gastos generales**… mantenimiento, aseo, vigilancia etc., así como al pago de las primas de seguros». Tabla: 401 = 10.36%, 402 = 7.48%, 201/301 = 10.37%, 202/302 = 10.62%, 203/303 = 7.48%, 101 = 10.96%, garajes 1.50% / 1.88%. Al final: «Los porcentajes anteriores podrán ser variados por determinación de la Asamblea General». |
-| Mayorías para reformar | [Art. 21º, num. 3 y 4](#-art-21o-quorum) | Modificar los coeficientes **o** el reglamento, imponer gravámenes extraordinarios, construir o subdividir unidades, o alterar el uso de bienes comunes requiere **el 51% del valor total de los coeficientes** (no de los asistentes). Demolición, división de bienes comunes o «erigir una nueva construcción» requieren el 80%. |
-| Formalizar reformas | [Art. 24º, num. 8](#-art-24o-administrador) | Es obligación del Administrador «**protocolizar las reformas al reglamento**… aprobadas por la asamblea» (es decir, elevarlas a escritura pública). |
-| Destino del edificio (Airbnb) | [Art. 14º](#-art-14o-uso-y-destino-del-edificio) | «destinado **exclusivamente al uso de habitación**… y su destino no podrá ser cambiado sin la aprobación de la Asamblea General… para lo cual se requiere el voto del **80%**». Los garajes no se pueden vender ni alquilar a personas ajenas a los habitantes. |
-| Linderos de los apartamentos | [Art. 7º](#-art-7o-areas-dependencias-y-linderos-de-las-unidades-privadas) | **401** = «Frente/Izquierda», **69.02 m²**: 2 alcobas, estar-alcoba, 2 baños y baño auxiliar. Al **Norte** linda con el predio de Jesús Jiménez Garzón y al Sur con el 402. **402** = «Frente/Derecha», **49.80 m²**: 2 alcobas y **un** baño. Al **Sur** linda con el predio de Clara Margarita Johnson Herrera. El mismo patrón se repite en 201/203 y 301/303; 202 y 302 son los del fondo (70.74 m²). |
-| Bienes comunes (la adición) | [Art. 8º](#-art-8o-bienes-de-propiedad-comun) | Son comunes, entre otros: el lote, la estructura, la entrada y la portería, la vía de vehículos, «**la zona de antejardín y Parqueo**», y «**los techos y áreas libres que circundan la edificación**». |
-| Actas | [Art. 22º](#-art-22o-resoluciones) | Libro de actas registrado en la Cámara de Comercio o en un Juzgado Civil. Contenido mínimo de cada acta. Copias «deberán ser entregadas… a los copropietarios que la soliciten». |
-| Obligaciones del Administrador | [Art. 24º](#-art-24o-administrador) | Presupuesto, convocar asambleas, cobrar las cuotas ordenadas por la asamblea, informe anual, **seguros**, **contabilidad**, protocolizar reformas, representación legal. |
-| Cuenta bancaria | [Art. 30º](#-art-30o-cuentas-bancarias) | Cheques firmados por el Administrador **y** un miembro de la Junta Asesora; conciliación mensual con extractos. |
-| Seguro | [Art. 31º](#-art-31o-destruccion-del-edificio) | Obligación de mantener «en vigencia permanente una póliza de seguros contra-incendio por valor comercial del Edificio». |
-| Convocatoria | [Art. 20º](#art-20o-reuniones), [Art. 11º num. 6](#art-11o-derechos-de-los-propietarios) | Asamblea ordinaria una vez al año (primeros 3 meses del periodo). **Tres o más copropietarios** pueden convocar una extraordinaria. Cualquier propietario puede pedir al administrador que convoque. |
+| **1. Linderos de los apartamentos** | [Art. 7º](#-art-7o-areas-dependencias-y-linderos-de-las-unidades-privadas), [Art. 32º num. 2](#-art-32o-disposiciones-varias), [Art. 12º num. 6](#-art-12o-deberes-de-los-copropietarios) | Art. 7º describe cada unidad por ubicación, área, dependencias y vecinos. **401** = «Frente/Izquierda», **69.02 m²**, 2 alcobas, estar-alcoba, 2 baños y baño auxiliar; por el **Norte** linda con el predio que «es o fué del Sr. Jesús Jiménez Garzón». **402** = «Frente/Derecha», **49.80 m²**, 2 alcobas y **un** baño; por el **Sur** linda con el predio de Clara Margarita Johnson Herrera. El mismo patrón se repite en 201/203 y 301/303; **202 y 302** son los del fondo (70.74 m², 3 alcobas). Art. 32º num. 2: «No obstante las medidas superficiarias… éstas se consideran como un **cuerpo cierto**». Art. 12º num. 6: quien vende debe comunicar al administrador el nombre del nuevo adquiriente. |
+| **2. Adición de la primera planta** | [Art. 8º](#-art-8o-bienes-de-propiedad-comun), [Art. 21º num. 3 y 4](#-art-21o-quorum), [Art. 12º num. 7 y 8](#-art-12o-deberes-de-los-copropietarios), [Art. 13º](#-art-13o-reparaciones) | Art. 8º: son bienes comunes «g) **La zona de antejardín y Parqueo**…» y «h) **Los techos y áreas libres que circundan la edificación**». Art. 21º num. 3: «la construcción de nuevas unidades de vivienda privada… o toda decisión que implique un alteración en el uso goce de los bienes comunes» requiere el **51% del valor total de los coeficientes**; num. 4: «la decisión de erigir una nueva construcción» requiere el **80%**. Art. 12º num. 8: modificar fachadas requiere el **80%**. Art. 13º: toda modificación exige permiso municipal y no puede afectar «la seguridad y la solidez del Edificio… o las fachadas». |
+| **3. Airbnb / arriendo** | [Art. 14º](#-art-14o-uso-y-destino-del-edificio), [Art. 11º num. 2](#-art-11o-derechos-de-los-propietarios), [Art. 12º num. 1, 15 y 17](#-art-12o-deberes-de-los-copropietarios) | Art. 14º: «destinado **exclusivamente al uso de habitación**, de sus propietarios, inquilinos, usuarios, etc, y su destino no podrá ser cambiado sin la aprobación de la Asamblea General… para lo cual se requiere el voto del **80%** de los porcentajes de las expensas comunes». Art. 11º num. 2: el propietario puede «dar en… arrendamiento su unidad privada… sin necesidad del consentimiento de los demás propietarios» (no menciona plazos). Art. 12º num. 1: no conceder el uso «para usos y fines distintos a los que autoriza este reglamento»; num. 15: el propietario responde solidariamente por quien ocupa su unidad; num. 17: todo ocupante distinto del dueño necesita un contrato en el que se obligue a cumplir el reglamento. |
+| **4. Administración** | [Art. 22º](#-art-22o-resoluciones), [Art. 24º](#-art-24o-administrador), [Art. 23º](#-art-23o-junta-asesora-o-consejo-de-administracion), [Art. 30º](#-art-30o-cuentas-bancarias), [Art. 31º](#-art-31o-destruccion-del-edificio), [Art. 8º lit. b](#-art-8o-bienes-de-propiedad-comun) | Art. 22º: libro de actas «debidamente registrado en la Cámara de Comercio… o en cualquiera de los Juzgados Civiles»; contenido mínimo; copias «a los copropietarios que la soliciten». Art. 24º: presupuesto (num. 1), informe anual a la asamblea (5), «contratar y mantener vigentes los seguros» (6), «llevar la contabilidad» (7), «**protocolizar las reformas al reglamento**» (8). Art. 23º num. 12: la Junta aprueba balances mensuales. Art. 30º: cheques firmados por el Administrador **y** un miembro de la Junta. Art. 31º: póliza contra incendio «por valor comercial del Edificio». Art. 8º lit. b: la estructura, «cubiertas, y las **impermeabilizaciones**» son bienes comunes (pertinente a filtraciones y humedades). |
+| **5. Cuota de administración** | [Art. 19º num. 11](#-art-19o-funciones-de-la-asamblea), [Art. 9º](#-art-9o-determinacion-de-los-coeficientes-de-copropiedad-en-base-a-las-areas-totales-del-edificio-que-ademas-habran-de-servir-para-el-reparto-de-los-gastos-generales-que-este-ocasione-en-su-mantenimiento-aseo-vigilancia-etc-asi-como-al-pago-de-las-primas-de-seguros), [Art. 18º num. 3](#-art-18o-asamblea-de-copropietarios), [Art. 31º](#-art-31o-destruccion-del-edificio), [Art. 21º num. 3](#-art-21o-quorum) | Art. 19º num. 11, **texto literal**: «Fijar el aporte o cuota periódica o extraordinaria que corresponda por expensas comunes a cada uno de los propietarios, **de acuerdo a los coeficientes de copropiedad**; función que podrá ser delegada en el Administrador». Art. 9º, título: coeficientes «que además habrán de servir para el **reparto de los gastos generales**… mantenimiento, aseo, vigilancia etc., así como al pago de las primas de seguros». Art. 18º num. 3: el voto de cada unidad vale su coeficiente. Art. 31º (pág. 34): la indemnización del seguro se reparte «en proporción al derecho de cada uno». Art. 21º num. 3: modificar los coeficientes o el reglamento requiere el 51% del total de coeficientes. Coeficientes: 101 = 10.96%; 201/301 = 10.37%; 202/302 = 10.62%; 203/303 = 7.48%; 401 = 10.36%; 402 = 7.48%; garajes 1–7 = 1.50% c/u; garajes 8 y 9 = 1.88% c/u. |
+| **6. Parqueaderos 8 y 9** | [Art. 14º, 2º párrafo](#-art-14o-uso-y-destino-del-edificio), [Art. 6º](#art-6o-distribucion-del-edificio), [Art. 7º](#-art-7o-areas-dependencias-y-linderos-de-las-unidades-privadas), [Art. 9º](#-art-9o-determinacion-de-los-coeficientes-de-copropiedad-en-base-a-las-areas-totales-del-edificio-que-ademas-habran-de-servir-para-el-reparto-de-los-gastos-generales-que-este-ocasione-en-su-mantenimiento-aseo-vigilancia-etc-asi-como-al-pago-de-las-primas-de-seguros) | Art. 14º: «Los garajes del edificio **no podrán ser vendidos o alquilados a personas extrañas a sus habitantes**, ni podrá utilizarse para guardar vehiculos de tipo pesado». Garajes 8 y 9: unidades privadas de 12.50 m² cada uno, al fondo, junto al apartamento 101 y al predio de La Salle (Art. 7º), con coeficiente propio de 1.88% cada uno (Art. 9º). |
+| **Gobierno del edificio** | [Art. 19º num. 1, 2 y 15](#-art-19o-funciones-de-la-asamblea), [Art. 20º](#art-20o-reuniones), [Art. 21º](#-art-21o-quorum), [Art. 23º](#-art-23o-junta-asesora-o-consejo-de-administracion), [Art. 13º](#-art-13o-reparaciones) | Art. 19º: la asamblea nombra y remueve al Administrador (num. 1); decide modificaciones a bienes comunes «con las mayorías establecidas en este reglamento» (num. 2, que remite al 51% del Art. 21º); elige la Junta (num. 15). Art. 20º: asamblea ordinaria anual; **tres o más copropietarios** pueden convocar una extraordinaria. Art. 21º: quórum del 51% de los coeficientes; decisiones por mayoría de los asistentes. Art. 23º: Junta de «tres (3) **o más** miembros con sus respectivos suplentes»; nombra administrador y fija su remuneración solo «si a ello lo autoriza la Asamblea» (num. 14). Art. 13º: reparaciones no urgentes las autoriza el Administrador hasta $100.000, la Junta hasta $200.000 y la asamblea por encima (valores de 1991); los daños graves y urgentes los puede mandar reparar el Administrador, un miembro de la Junta o cualquier copropietario. |
 
 > El reglamento se otorgó bajo la Ley 182 de 1948 y el Decreto 1365 de 1986. La Ley 675 de 2001 cambió después varias de estas reglas (por ejemplo, exige el 70% para algunas decisiones que aquí piden el 51%). Qué regla prevalece hoy es una pregunta para un abogado; esta transcripción solo dice lo que dice el documento.
 
@@ -294,7 +289,7 @@ Los porcentajes anteriores podrán ser variados por determinación de la Asamble
 
 Este Edificio, dividido con autonimía en partes horizontales, está destinado a pertenecer a una o varias personas por secciones materiales. La propiedad horizontal en este Edificio se sujeta a las disposiciones de la Ley 182 de 1.948 y al Decreto Reglamentario No. 1.365 de 1986 de acuerdo conlas siguientes normas:
 
-### Art. 11o. DERECHOS DE LOS PROPIETARIOS
+### ⭐ Art. 11o. DERECHOS DE LOS PROPIETARIOS
 
 Son los derechos de los propietarios:
 
@@ -307,7 +302,7 @@ Son los derechos de los propietarios:
 
 <!-- página 17 · papel notarial AB 23424708 · folio 000191 -->
 
-### Art. 12o. DEBERES DE LOS COPROPIETARIOS
+### ⭐ Art. 12o. DEBERES DE LOS COPROPIETARIOS
 
 1. No enajenar o conceder el uso de la Unidad Privada para usos y fines distintos a los que autoriza este reglamento.
 2. No obstruir en ninguna forma las instalaciones de servicios, los halles de circulación interna, los andenes, ni ocupar los frentes para colocar pancartas o avisos.
@@ -334,7 +329,7 @@ Son los derechos de los propietarios:
 
 inquilino a cualquier titulo, conoce y se obliga a respetar y cumplir con las Normas de este reglamento, pero en todo caso, el propietario responderá de cualquier acción que se determine contra el inquilino o infractor.
 
-### Art. 13o. REPARACIONES
+### ⭐ Art. 13o. REPARACIONES
 
 **UNIDADES PRIVADAS:** Cada propietario de obliga a ejecutar de inmediato, en las Unidades de su propiedad, las reparaciones cuya omisión pueda ocasionar perjuicio a la propiedad común o a las demás propiedades privativas y responderá por los sueños[^n-suenos] irrogados por tal omisión. Para modificaciones a sus propiedades, los propietarios deben llenar los siguientes requisitos: 1. obtener previa autorización de la entidad municipal competente, si la naturaleza de la obra y las normas municipales lo exigen. 2. Que la obra proyectada no compromete la seguridad y la solidez del Edificio, ni afecte la salubridad o los servicios comunes olas fachadas del mismo. 3. Efectuar previa autorización escrita del Administrador, reparaciones en las zonas comunes adyacentes a su propiedad privada, pudiendo formular las cuentas correspondientes a la comunidad del edificio. si los daños ocurrieren a consecuencia de las reparaciones internas del local o apartamento, los gastos serán por cuenta exclusiva del propietario del mismo.
 
@@ -372,7 +367,7 @@ La Administración del inmueble se hará a través de los siguientes organos:
 
 4. El Auditor o Revisor Fiscal.
 
-### Art. 18o. ASAMBLEA DE COPROPIETARIOS
+### ⭐ Art. 18o. ASAMBLEA DE COPROPIETARIOS
 
 La Asamblea de copropietarios estaráformada por todos los propietarios de las Unidades Privadas. A ella podrá asistir con voz y voto todos ellos. Su asistencia puede ser personal o por represetación en otra persona. Esta delegación deberá hacerse mediante comunicación escrita dirigida al Administrador o al presidente de la asamblea y solo será valida para la reunión que la motiva. La asamblea es el ógarno supremo de la Administración y a través de ella se manifiesta la voluntad de los copropietarios y en ella radica la facultad rectora de este régimen jurídico. La asamblea General de Copropietarios la integran todos los propietarios que a la fecha de la respectiva reunión tengan sus títulos de propiedad y se hallen inscritos en el libro de registro de copropietarios.
 
@@ -459,7 +454,7 @@ Las actas se enumerán en forma consecutiva y expresarán por lo menos: lugar, f
 
 Las deciciones adoptadas válidamente por la asamblea general de copropietarios obliga a todos los propietarios de unidades de dominio privado, incluso a los ausentes o disidentes, al administrador, o a los demás organismos asesores y ejecutores de la administración y dirección, si los hubiere, y a quienes a cualquier título usen bienes integrantes del edificio, siempre que tales decisiones sean de caracter general y se ajusten a las leyes, Decretos o al Reglamento de Propiedad Horizontal.
 
-### Art. 23o. JUNTA ASESORA O CONSEJO DE ADMINISTRACION
+### ⭐ Art. 23o. JUNTA ASESORA O CONSEJO DE ADMINISTRACION
 
 La Junta Asesora o Consejo de Administración será nombrada por la asamblea general de copropietarios y estará compuesta por tres (3) o más miembros con sus respectivos suplentes. Será la entidad delegataria de la asamblea ante el Administrador y los copropietarios, con las siguientes funciones:
 
@@ -528,7 +523,7 @@ En caso de ser creado por la Asamblea de copropietarios el cargo de revisor fisc
 
 **PARAGRAFO:** El revisor fiscal no podrá estar ligado dentro del cuarto grado civil de consaguinidad o al segundo de afinidad con el administrador, con los miembros de la Junta Asesora o Consejo de Administración, con el contador o el Cajero, si los hubiere y su cargo es incompatible con cualquier otro cargo o empleo en la Administración.
 
-### Art. 27o. DEPOSITO PERMANENTE, CUOTAS ORDINARIAS Y EXTRAORDINARIAS, E INTERESES DE MORA
+### ⭐ Art. 27o. DEPOSITO PERMANENTE, CUOTAS ORDINARIAS Y EXTRAORDINARIAS, E INTERESES DE MORA
 
 Para atender oportunamente los gastos de las expensas comunes, y a la vez para servir como capital de la comunidad, la asamblea podrá establecer un depósito permanente por la cuantía apróximada al valor de las expensas comunes calculadas para un mes, lo cual
 
@@ -566,7 +561,7 @@ copropiedad. Las indemnizaciones provenientes de seguros, se destinarán princip
 
 Los seguros de inmuebles y enseres corresponden individualmente a cada propietario.
 
-### Art. 32o. DISPOSICIONES VARIAS
+### ⭐ Art. 32o. DISPOSICIONES VARIAS
 
 1. Cundo no se encuentre en este reglamento disposición alguna aplicable a un determinado caso, se explicarán las normas pertinentes previstas por las leyes y dretos en vigencia para la propiedad horizontal.
 2. No obstante las medidas superficiarias anteriormente expresadas para cada unidad privada, éstas se consideran como un cuerpo cierto.
