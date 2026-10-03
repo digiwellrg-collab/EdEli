@@ -22,4 +22,5 @@ Funciona con una **Google Sheet + Google Apps Script**: no requiere servidor ni 
 | [`docs/INSTRUCCIONES_PROPIETARIOS.md`](docs/INSTRUCCIONES_PROPIETARIOS.md) | Mensaje para enviar a los propietarios. |
 | [`tests/`](tests) | Pruebas (`node tests/run.js`). |
 | `Administracion/` | Documentos de referencia del edificio. |
-| [`Administracion/reglamento-1992.md`](Administracion/reglamento-1992.md) | Reglamento de copropiedad (Escritura 1.994 de 1991), transcrito de las fotos; incluye secciones clave y puntos por revisar. |
+| [`Administracion/reglamento-1992-texto.md`](Administracion/reglamento-1992-texto.md) | Reglamento de copropiedad (Escritura 1.994 de 1991): texto completo transcrito de las fotos, sin añadidos. |
+| [`Administracion/reglamento-1992.md`](Administracion/reglamento-1992.md) | El mismo texto con índice de secciones clave y puntos por revisar. |
