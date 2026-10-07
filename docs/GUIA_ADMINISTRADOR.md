@@ -83,6 +83,9 @@ y `clasp login` con la cuenta dueña de la hoja. Si PowerShell bloquea `clasp`:
    `Método = Efectivo` y en `Soporte` el link a la foto del recibo firmado.
 4. Solo lo verificado cuenta en los informes.
 5. Si un pago cubre varios meses, divídalo en una fila por mes (`Mes aplicado`).
+   Un pago de lo que se debía antes de octubre de 2025 (columna **Saldo anterior** de
+   Apartamentos) va con `Tipo = Abono a saldo anterior` y `Mes aplicado` vacío: descuenta
+   del saldo anterior y no llena ningún mes.
 6. **Arriendo de parqueadero** (p. ej. Sr. César): fila en Pagos con `Tipo = Arriendo parqueadero`
    y en `Apto` escriba `PARQ`. Cuenta como ingreso del edificio, no en el estado de cuenta.
 7. Cuotas extraordinarias o aportes: cambie `Tipo` (no cuentan como cuota ordinaria en el

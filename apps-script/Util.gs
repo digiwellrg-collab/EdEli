@@ -38,6 +38,7 @@ var TIPO_PAGO = {
   APORTE: 'Aporte voluntario',
   MULTA: 'Multa / interés de mora',
   CREDITO: 'Crédito (gasto pagado por propietario)',
+  SALDO_ANTERIOR: 'Abono a saldo anterior',
   PARQUEADERO: 'Arriendo parqueadero',
   OTRO: 'Otro ingreso'
 };

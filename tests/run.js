@@ -355,6 +355,27 @@ test('months without any payment reported (arrears) for the dashboard', () => {
   g.moraAptos.forEach((a) => assert.strictEqual(a.lista.length, a.meses));
 });
 
+test('payments toward the balance owed before MES_INICIO', () => {
+  ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
+  tablas.Apartamentos[1]['Saldo anterior'] = 480000;
+  tablas.Pagos.push(
+    { Apto: '402', 'Mes aplicado': '', 'Fecha pago': d('2025-12-24'), Valor: 488088, Tipo: 'Abono a saldo anterior', Estado: 'Verificado' },
+    { Apto: '401', 'Mes aplicado': '', 'Fecha pago': '', Valor: 70000, Tipo: 'Abono a saldo anterior', Estado: 'Declarado (sin soporte)' });
+  const f = ctx.calcularFinanzas_('2025-12');
+  const c402 = f.cuentas.find((c) => c.apto === '402');
+  const c401 = f.cuentas.find((c) => c.apto === '401');
+  assert.strictEqual(c402.abonoSaldo, 488088);
+  assert.strictEqual(c402.otros, 0);                       // not an "other contribution"
+  assert.ok(c402.celdas.every((x) => x.pagado <= 120000));  // never fills a month
+  // 480.000 - 488.088 + dues (Oct-Dec) - verified Oct payment = credit carried into dues.
+  assert.strictEqual(ctx.deudaHasta_(c402, '2025-12'), 480000 - 488088 + 360000 - 120000);
+  assert.strictEqual(c401.abonoSaldo, 0);                  // declared: not verified
+  assert.ok(c401.pendiente >= 70000);                      // counts in "si se acepta lo reportado"
+  assert.strictEqual(f.porMes.find((m) => m.mes === '2025-12').ingresosCuotas, 488088);
+  tablas.Pagos.splice(-2, 2);
+  tablas.Apartamentos[1]['Saldo anterior'] = 50000;
+});
+
 test('captura grid becomes payments, credits and notes', () => {
   ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
   const f = ctx.calcularFinanzas_('2025-12');

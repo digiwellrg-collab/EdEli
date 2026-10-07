@@ -66,7 +66,9 @@ function calcularFinanzas_(mesFin) {
     var porCategoria = {};
     objValores_(CATEGORIA).forEach(function (c) { porCategoria[c] = 0; });
     gas.forEach(function (g) { porCategoria[g.categoria] = (porCategoria[g.categoria] || 0) + g.valor; });
-    var ingCuotas = suma_(ing.filter(function (p) { return p.tipo === TIPO_PAGO.ORDINARIA; }));
+    var ingCuotas = suma_(ing.filter(function (p) {
+      return p.tipo === TIPO_PAGO.ORDINARIA || p.tipo === TIPO_PAGO.SALDO_ANTERIOR;
+    }));
     var ingOtros = suma_(ing) - ingCuotas;
     var totalGastos = suma_(gas);
     var fila = {
@@ -132,7 +134,11 @@ function calcularFinanzas_(mesFin) {
     }
     var otros = suma_(pagos.filter(function (p) {
       return p.apto === a.apto && !esCuota_(p.tipo) && p.tipo !== TIPO_PAGO.MULTA &&
-        p.estado === ESTADO_PAGO.VERIFICADO;
+        p.tipo !== TIPO_PAGO.SALDO_ANTERIOR && p.estado === ESTADO_PAGO.VERIFICADO;
+    }));
+    // Verified payments toward the balance owed before MES_INICIO.
+    var abonoSaldo = suma_(pagos.filter(function (p) {
+      return p.apto === a.apto && p.tipo === TIPO_PAGO.SALDO_ANTERIOR && p.estado === ESTADO_PAGO.VERIFICADO;
     }));
     var creditos = suma_(pagos.filter(function (p) {
       return p.apto === a.apto && p.tipo === TIPO_PAGO.CREDITO && p.estado !== ESTADO_PAGO.RECHAZADO;
@@ -142,7 +148,7 @@ function calcularFinanzas_(mesFin) {
     }));
     return {
       apto: a.apto, propietario: a.propietario, notas: a.notas, saldoAnterior: a.saldoAnterior,
-      celdas: celdas, otros: otros, pendiente: pendiente, creditos: creditos
+      celdas: celdas, otros: otros, pendiente: pendiente, creditos: creditos, abonoSaldo: abonoSaldo
     };
   });
 
@@ -163,7 +169,7 @@ function suma_(lista) {
  * verified payments (including prepaid months). Negative = credit in favour.
  */
 function deudaVencida_(cuenta, cfg, ahora) {
-  return cuenta.saldoAnterior + cuenta.celdas.reduce(function (s, c) {
+  return cuenta.saldoAnterior - (cuenta.abonoSaldo || 0) + cuenta.celdas.reduce(function (s, c) {
     var cargo = vencido_(c.mes, cfg, ahora) ? c.cuota + c.multa : 0;
     return s + cargo - c.pagado - c.pagadoMulta;
   }, 0);
@@ -171,7 +177,7 @@ function deudaVencida_(cuenta, cfg, ahora) {
 
 /** Owed through a month: prior balance + dues + late fees up to mes - verified payments of both. */
 function deudaHasta_(cuenta, mes) {
-  return cuenta.saldoAnterior + cuenta.celdas.reduce(function (s, c) {
+  return cuenta.saldoAnterior - (cuenta.abonoSaldo || 0) + cuenta.celdas.reduce(function (s, c) {
     return c.mes <= mes ? s + c.cuota + c.multa - c.pagado - c.pagadoMulta : s;
   }, 0);
 }
