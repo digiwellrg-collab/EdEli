@@ -348,11 +348,22 @@ test('months without any payment reported (arrears) for the dashboard', () => {
   ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
   const out = ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-30'));
   assert.strictEqual(out.mora.reduce((s, t) => s + t.n, 0), out.kpis.aptosTotal);
-  assert.strictEqual(out.moraAptos, null); // per-apartment detail is opt-in
+  assert.strictEqual(out.aptos, null); // per-apartment detail is opt-in
   ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5, DASHBOARD_POR_APTO: 'SI' });
   const g = ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-30'));
-  assert.strictEqual(g.moraAptos.length, out.kpis.aptosTotal);
-  g.moraAptos.forEach((a) => assert.strictEqual(a.lista.length, a.meses));
+  assert.strictEqual(g.aptos.filas.length, out.kpis.aptosTotal);
+  g.aptos.filas.forEach((a) => assert.strictEqual(a.estados.length, g.aptos.meses.length));
+  assert.ok(g.aptos.meses.length <= 12);
+  const g2 = ctx.datosDashboard_(ctx.calcularFinanzas_('2026-12'), '2026-12', d('2026-12-30'));
+  assert.strictEqual(g2.aptos.meses.length, 12);
+  assert.strictEqual(g2.aptos.meses[11], 'dic 26');
+  assert.strictEqual(g2.aptos.meses[0], 'ene 26');
+  const est = (o) => ctx.estadoMesApto_(Object.assign({ mes: '2025-11', cuota: 139861, pagado: 0, conSoporte: 0, declarado: 0 }, o), { DIAS_ANTES_FIN_MES: 5 }, d('2026-03-10'));
+  assert.strictEqual(est({ declarado: 120000 }), 'declarado'); // less than the fee still counts as paid
+  assert.strictEqual(est({ pagado: 96984, declarado: 120000 }), 'ok');
+  assert.strictEqual(est({ conSoporte: 1 }), 'soporte');
+  assert.strictEqual(est({}), 'pendiente');
+  assert.strictEqual(est({ mes: '2026-03' }), 'futuro');
 });
 
 test('payments toward the balance owed before MES_INICIO', () => {

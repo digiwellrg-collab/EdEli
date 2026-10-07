@@ -89,6 +89,15 @@ function mesesSinPago_(c, cfg, hoy, ahora) {
   }).map(function (x) { return x.mes; });
 }
 
+/** 'ok' verified, 'soporte' receipt to verify, 'declarado' reported without receipt, 'pendiente' due and unpaid, 'futuro' not due yet. */
+function estadoMesApto_(x, cfg, ahora) {
+  if (x.cuota <= 0) return '';
+  if (x.pagado > 0) return 'ok';
+  if (x.conSoporte > 0) return 'soporte';
+  if (x.declarado > 0) return 'declarado';
+  return vencido_(x.mes, cfg, ahora) ? 'pendiente' : 'futuro';
+}
+
 var TRAMOS_MORA = [
   { hasta: 0, etiqueta: 'Al día' },
   { hasta: 1, etiqueta: '1 mes' },
@@ -179,8 +188,7 @@ function datosDashboard_(f, hoy, ahora) {
       })
     } : null,
     aptos: null,
-    mora: null,
-    moraAptos: null
+    mora: null
   };
 
   var sinPago = f.cuentas.map(function (c) { return mesesSinPago_(c, cfg, hoy, ahora); });
@@ -188,23 +196,19 @@ function datosDashboard_(f, hoy, ahora) {
     return { etiqueta: t.etiqueta, n: sinPago.filter(function (l) { return tramoMora_(l.length) === i; }).length };
   });
 
+  // Per apartment, last 12 months: one state per month (no amounts). Opt-in.
+  // A month counts as paid if any payment was reported for it, whatever the
+  // amount (same rule as mesesSinPago_), labelled by its strongest evidence.
   if (String(cfg.DASHBOARD_POR_APTO || '').toUpperCase() === 'SI') {
-    out.moraAptos = f.cuentas.map(function (c, i) {
-      return { apto: c.apto, meses: sinPago[i].length, tramo: tramoMora_(sinPago[i].length), lista: sinPago[i].map(etiqueta) };
-    });
+    var ult = recaudo.slice(-12).map(function (r) { return r.mes; });
     out.aptos = {
-      meses: recaudo.map(function (r) { return r.etiqueta; }),
+      meses: ult.map(etiqueta),
       filas: f.cuentas.map(function (c) {
         return {
           apto: c.apto,
-          estados: c.celdas.filter(function (x) { return x.mes <= hoy; }).map(function (x) {
-            var total = x.pagado + x.conSoporte + x.declarado;
-            if (x.cuota <= 0) return '';
-            if (x.pagado >= x.cuota) return 'ok';
-            if (x.pagado + x.conSoporte >= x.cuota) return 'soporte';
-            if (total >= x.cuota) return 'declarado';
-            if (total > 0) return 'parcial';
-            return vencido_(x.mes, cfg, ahora) ? 'pendiente' : 'futuro';
+          estados: ult.map(function (mes) {
+            var x = c.celdas.filter(function (y) { return y.mes === mes; })[0];
+            return x ? estadoMesApto_(x, cfg, ahora) : '';
           })
         };
       })

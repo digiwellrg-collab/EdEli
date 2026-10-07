@@ -111,15 +111,23 @@
   @media (max-width: 600px) { #t-gastos th:nth-child(2), #t-gastos td:nth-child(2) { display: none; } }
   .scroll { overflow-x: auto; }
   .full { margin-top: 16px; }
-  .aptos td, .aptos th { text-align: center; padding: 6px 4px; }
+  .aptos td, .aptos th { text-align: center; padding: 6px 2px; }
+  .aptos th { font-size: 11.5px; font-weight: 600; }
+  .aptos td.cuenta { text-align: right; font-size: 12.5px; color: var(--ink-2); white-space: nowrap; padding-left: 8px; }
+  .dot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; box-sizing: border-box; }
+  .legend .dot { width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; }
+  .dot.ok { background: var(--ok); }
+  .dot.soporte { background: var(--sop); }
+  .dot.declarado { background: var(--dec); }
+  .dot.pendiente { background: transparent; border: 2px solid var(--bad); }
+  .dot.futuro { background: transparent; border: 1.5px dashed var(--axis); }
+  @media (max-width: 600px) {
+    .aptos td, .aptos th { padding: 5px 1px; }
+    .aptos th { font-size: 9.5px; }
+    .aptos td .dot { width: 13px; height: 13px; }
+    .aptos td.cuenta { font-size: 11px; padding-left: 4px; }
+  }
   .aptos td:first-child, .aptos th:first-child { text-align: left; font-weight: 600; }
-  .st { display: inline-block; width: 26px; height: 22px; line-height: 22px; border-radius: 5px; font-size: 12px; }
-  .st.ok { background: var(--ok); color: #fff; }
-  .st.soporte { background: var(--sop); color: #fff; }
-  .st.declarado { background: var(--dec); color: #fff; }
-  .st.parcial { background: repeating-linear-gradient(45deg, var(--ok) 0 4px, var(--track) 4px 8px); color: var(--ink); }
-  .st.pendiente { background: transparent; box-shadow: inset 0 0 0 2px var(--bad); color: var(--bad-text); }
-  .st.futuro { background: transparent; box-shadow: inset 0 0 0 1px var(--axis); color: var(--muted); }
   footer { margin-top: 28px; font-size: 12.5px; color: var(--muted); }
   footer p { margin: 4px 0; }
 </style>
@@ -216,13 +224,6 @@
       <div class="canvas"><canvas id="c-mora" aria-label="Apartamentos según meses sin pago"></canvas></div>
       <p class="note">Un mes pagado por menos de la cuota no se cuenta como mes sin pago.</p>
     </div>
-    <div class="card" id="mora-apto-card" hidden>
-      <h2>Meses sin pago por apartamento</h2>
-      <p class="chart-sub">Meses vencidos sin ningún pago reportado. Toque una barra para ver cuáles.</p>
-      <div class="legend" id="l-mora"></div>
-      <div class="canvas tall"><canvas id="c-mora-apto" aria-label="Meses sin pago por apartamento"></canvas></div>
-      <details><summary>Ver tabla</summary><div class="scroll" id="t-mora"></div></details>
-    </div>
   </section>
 
   <section class="card full">
@@ -240,15 +241,14 @@
   </section>
 
   <section class="card full" id="s-aptos" hidden>
-    <h2>Pagos por apartamento</h2>
-    <p class="chart-sub">Solo el estado de cada mes; los valores individuales no se publican.</p>
+    <h2>Pagos por apartamento · últimos 12 meses</h2>
+    <p class="chart-sub">Punto lleno = mes con pago reportado (de cualquier valor). Pase el cursor sobre un punto para ver el detalle.</p>
     <div class="legend">
-      <span><span class="st ok">✓</span> Verificado</span>
-      <span><span class="st soporte">📎</span> Soporte por verificar</span>
-      <span><span class="st declarado">🗣</span> Declarado</span>
-      <span><span class="st parcial">½</span> Parcial</span>
-      <span><span class="st pendiente">✗</span> Vencido sin pago</span>
-      <span><span class="st futuro">·</span> Aún no vence</span>
+      <span><b class="dot ok"></b>Pagado y verificado</span>
+      <span><b class="dot soporte"></b>Pagado, con soporte por verificar</span>
+      <span><b class="dot declarado"></b>Pagado según lo reportado, sin soporte</span>
+      <span><b class="dot pendiente"></b>Vencido sin pago</span>
+      <span><b class="dot futuro"></b>Aún no vence</span>
     </div>
     <div class="scroll" id="t-aptos"></div>
   </section>
@@ -347,18 +347,7 @@ function pintar(D) {
   var tramos = (D.mora || []).map(function (t) { return t.etiqueta; });
   if (D.mora) {
     $('s-mora').hidden = false;
-    if (!D.moraAptos) {
-      $('mora-card').style.gridColumn = '1 / -1';
-    } else {
-      $('mora-apto-card').hidden = false;
-      $('l-mora').innerHTML = tramos.map(function (t, i) {
-        return '<span><i style="background:var(' + MC[i] + ')"></i>' + esc(t) + '</span>';
-      }).join('');
-      $('t-mora').innerHTML = '<table><thead><tr><th>Apto</th><th class="n">Meses sin pago</th><th>Cuáles</th></tr></thead><tbody>' +
-        D.moraAptos.map(function (a) {
-          return '<tr><td>' + esc(a.apto) + '</td><td class="n">' + a.meses + '</td><td>' + esc(a.lista.join(', ') || '—') + '</td></tr>';
-        }).join('') + '</tbody></table>';
-    }
+    $('mora-card').style.gridColumn = '1 / -1';
   }
 
   if (D.gastosMes && D.gastosMes.filas.length) {
@@ -371,12 +360,18 @@ function pintar(D) {
   }
   if (D.aptos) {
     $('s-aptos').hidden = false;
-    var sim = { ok: '✓', soporte: '📎', declarado: '🗣', parcial: '½', pendiente: '✗', futuro: '·', '': '' };
-    var h = '<table class="aptos"><thead><tr><th>Apto</th>' + D.aptos.meses.map(function (m) { return '<th>' + esc(m) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    var nombres = { ok: 'pagado y verificado', soporte: 'pagado, soporte por verificar', declarado: 'pagado según lo reportado (sin soporte)',
+      pendiente: 'vencido sin pago', futuro: 'aún no vence' };
+    var h = '<table class="aptos"><thead><tr><th>Apto</th>' + D.aptos.meses.map(function (m) { return '<th>' + esc(m) + '</th>'; }).join('') +
+      '<th class="n">Pagados</th></tr></thead><tbody>';
     D.aptos.filas.forEach(function (f) {
-      h += '<tr><td>' + esc(f.apto) + '</td>' + f.estados.map(function (e) {
-        return '<td>' + (e ? '<span class="st ' + e + '" title="' + e + '">' + sim[e] + '</span>' : '') + '</td>';
-      }).join('') + '</tr>';
+      var pagados = f.estados.filter(function (e) { return e === 'ok' || e === 'soporte' || e === 'declarado'; }).length;
+      var vencidos = f.estados.filter(function (e) { return e && e !== 'futuro'; }).length;
+      h += '<tr><td>' + esc(f.apto) + '</td>' + f.estados.map(function (e, i) {
+        if (!e) return '<td></td>';
+        var t = 'Apto ' + f.apto + ' · ' + D.aptos.meses[i] + ': ' + nombres[e];
+        return '<td><span class="dot ' + e + '" title="' + esc(t) + '" aria-label="' + esc(t) + '"></span></td>';
+      }).join('') + '<td class="cuenta">' + pagados + ' de ' + vencidos + '</td></tr>';
     });
     $('t-aptos').innerHTML = h + '</tbody></table>';
   }
@@ -391,7 +386,7 @@ function pintar(D) {
   }
   var charts = [];
   if (!window.Chart) {
-    ['c-flujo', 'c-saldo', 'c-recaudo', 'c-comp', 'c-cat', 'c-mora', 'c-mora-apto'].forEach(function (id) {
+    ['c-flujo', 'c-saldo', 'c-recaudo', 'c-comp', 'c-cat', 'c-mora'].forEach(function (id) {
       falla(id, 'la librería de gráficos no cargó. Recargue la página; las tablas "Ver tabla" tienen los mismos datos.');
     });
     return;
@@ -519,32 +514,6 @@ function pintar(D) {
         plugins: [etiquetasFin(function (i) { return plural(D.mora[i].n, 'apto', 'aptos'); })]
       });
     }
-    if (D.moraAptos) {
-      var aptoOpts = base(false, false);
-      var maxMeses = D.moraAptos.reduce(function (m, a) { return Math.max(m, a.meses); }, 0);
-      aptoOpts.indexAxis = 'y';
-      aptoOpts.interaction = { mode: 'nearest', axis: 'y', intersect: false };
-      aptoOpts.layout = { padding: { right: 70 } };
-      aptoOpts.scales = {
-        x: { min: 0, suggestedMax: Math.max(3, maxMeses), grid: { color: css('--grid') }, border: { display: false },
-          ticks: { color: css('--muted'), stepSize: 1, precision: 0 } },
-        y: { grid: { display: false }, border: { color: css('--axis') }, ticks: { color: css('--ink-2') } }
-      };
-      aptoOpts.plugins.tooltip.callbacks.label = function (c) {
-        var a = D.moraAptos[c.dataIndex];
-        return a.meses ? ' Sin pago: ' + a.lista.join(', ') : ' Al día';
-      };
-      grafico('c-mora-apto', {
-        type: 'bar',
-        data: { labels: D.moraAptos.map(function (a) { return 'Apto ' + a.apto; }), datasets: [{
-          label: 'Meses sin pago', data: D.moraAptos.map(function (a) { return a.meses; }),
-          backgroundColor: D.moraAptos.map(function (a) { return css(MC[a.tramo]); }),
-          borderRadius: 4, borderSkipped: 'start', maxBarThickness: 22, minBarLength: 3
-        }] },
-        options: aptoOpts,
-        plugins: [etiquetasFin(function (i) { var n = D.moraAptos[i].meses; return n ? plural(n, 'mes', 'meses') : 'Al día'; })]
-      });
-    }
 
     var catOpts = base(false, false);
     catOpts.indexAxis = 'y';
@@ -566,7 +535,7 @@ function pintar(D) {
       options: catOpts
     });
   }
-  try { dibujar(); } catch (e) { ['c-flujo', 'c-saldo', 'c-recaudo', 'c-comp', 'c-cat', 'c-mora', 'c-mora-apto'].forEach(function (id) { falla(id, e.message || String(e)); }); }
+  try { dibujar(); } catch (e) { ['c-flujo', 'c-saldo', 'c-recaudo', 'c-comp', 'c-cat', 'c-mora'].forEach(function (id) { falla(id, e.message || String(e)); }); }
   if (window.matchMedia) {
     var mq = window.matchMedia('(prefers-color-scheme: dark)');
     if (mq.addEventListener) mq.addEventListener('change', dibujar);
