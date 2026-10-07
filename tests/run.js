@@ -327,6 +327,34 @@ test('public dashboard: building totals only, no names or per-apartment amounts'
   delete tablas.Apartamentos[0].Notas;
 });
 
+test('months without any payment reported (arrears) for the dashboard', () => {
+  const cfg = { DIAS_ANTES_FIN_MES: 5 };
+  const cel = (mes, o) => Object.assign({ mes, cuota: 100000, multa: 0, pagado: 0, pagadoMulta: 0, conSoporte: 0, declarado: 0 }, o || {});
+  const c = { celdas: [
+    cel('2025-10', { pagado: 100000 }),   // paid
+    cel('2025-11', { declarado: 40000 }), // partial: not counted as arrears
+    cel('2025-12'),                       // nothing reported -> arrears
+    cel('2026-01', { conSoporte: 100000 }),
+    cel('2026-02'),                       // nothing -> arrears
+    cel('2026-03')                        // not due yet
+  ] };
+  const l = ctx.mesesSinPago_(c, cfg, '2026-03', d('2026-03-10'));
+  assert.strictEqual(JSON.stringify(l), JSON.stringify(['2025-12', '2026-02']));
+  assert.strictEqual(ctx.tramoMora_(0), 0);
+  assert.strictEqual(ctx.tramoMora_(1), 1);
+  assert.strictEqual(ctx.tramoMora_(3), 2);
+  assert.strictEqual(ctx.tramoMora_(9), 3);
+
+  ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
+  const out = ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-30'));
+  assert.strictEqual(out.mora.reduce((s, t) => s + t.n, 0), out.kpis.aptosTotal);
+  assert.strictEqual(out.moraAptos, null); // per-apartment detail is opt-in
+  ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5, DASHBOARD_POR_APTO: 'SI' });
+  const g = ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-30'));
+  assert.strictEqual(g.moraAptos.length, out.kpis.aptosTotal);
+  g.moraAptos.forEach((a) => assert.strictEqual(a.lista.length, a.meses));
+});
+
 test('captura grid becomes payments, credits and notes', () => {
   ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
   const f = ctx.calcularFinanzas_('2025-12');

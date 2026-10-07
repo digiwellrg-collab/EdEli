@@ -28,6 +28,7 @@
     --sop: #2a78d6;         /* soporte por verificar */
     --dec: #ec835a;         /* declarado sin soporte */
     --track: #e1e0d9;       /* sin pago */
+    --m0: #0ca30c; --m1: #fab219; --m2: #ec835a; --m3: #d03b3b;  /* tramos de mora (estado) */
     --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100; --c5: #e87ba4;  /* categorías de gasto */
     --bad: #d03b3b;
     --good-text: #006300;
@@ -208,6 +209,22 @@
     </div>
   </section>
 
+  <section class="grid two" id="s-mora" hidden>
+    <div class="card" id="mora-card">
+      <h2>¿Cuántos apartamentos están atrasados?</h2>
+      <p class="chart-sub">Apartamentos según los meses vencidos sin ningún pago reportado, desde octubre de 2025.</p>
+      <div class="canvas"><canvas id="c-mora" aria-label="Apartamentos según meses sin pago"></canvas></div>
+      <p class="note">Un mes pagado por menos de la cuota no se cuenta como mes sin pago.</p>
+    </div>
+    <div class="card" id="mora-apto-card" hidden>
+      <h2>Meses sin pago por apartamento</h2>
+      <p class="chart-sub">Meses vencidos sin ningún pago reportado. Toque una barra para ver cuáles.</p>
+      <div class="legend" id="l-mora"></div>
+      <div class="canvas tall"><canvas id="c-mora-apto" aria-label="Meses sin pago por apartamento"></canvas></div>
+      <details><summary>Ver tabla</summary><div class="scroll" id="t-mora"></div></details>
+    </div>
+  </section>
+
   <section class="card full">
     <h2>Composición del gasto por mes</h2>
     <p class="chart-sub">Qué porcentaje del gasto de cada mes fue a cada categoría (gastos pagados).</p>
@@ -326,6 +343,24 @@ function pintar(D) {
     return h + '</tbody></table>';
   })();
 
+  var MC = ['--m0', '--m1', '--m2', '--m3'];
+  var tramos = (D.mora || []).map(function (t) { return t.etiqueta; });
+  if (D.mora) {
+    $('s-mora').hidden = false;
+    if (!D.moraAptos) {
+      $('mora-card').style.gridColumn = '1 / -1';
+    } else {
+      $('mora-apto-card').hidden = false;
+      $('l-mora').innerHTML = tramos.map(function (t, i) {
+        return '<span><i style="background:var(' + MC[i] + ')"></i>' + esc(t) + '</span>';
+      }).join('');
+      $('t-mora').innerHTML = '<table><thead><tr><th>Apto</th><th class="n">Meses sin pago</th><th>Cuáles</th></tr></thead><tbody>' +
+        D.moraAptos.map(function (a) {
+          return '<tr><td>' + esc(a.apto) + '</td><td class="n">' + a.meses + '</td><td>' + esc(a.lista.join(', ') || '—') + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    }
+  }
+
   if (D.gastosMes && D.gastosMes.filas.length) {
     $('s-gastos').hidden = false;
     $('g-titulo').textContent = 'Gastos de ' + D.gastosMes.mes;
@@ -356,10 +391,28 @@ function pintar(D) {
   }
   var charts = [];
   if (!window.Chart) {
-    ['c-flujo', 'c-saldo', 'c-recaudo', 'c-comp', 'c-cat'].forEach(function (id) {
+    ['c-flujo', 'c-saldo', 'c-recaudo', 'c-comp', 'c-cat', 'c-mora', 'c-mora-apto'].forEach(function (id) {
       falla(id, 'la librería de gráficos no cargó. Recargue la página; las tablas "Ver tabla" tienen los mismos datos.');
     });
     return;
+  }
+  // Text at the end of each horizontal bar, in ink colour (never the series colour).
+  function etiquetasFin(texto) {
+    return {
+      id: 'etiquetasFin',
+      afterDatasetsDraw: function (chart) {
+        var ctx = chart.ctx;
+        ctx.save();
+        ctx.fillStyle = css('--ink-2');
+        ctx.font = '600 12px system-ui, -apple-system, "Segoe UI", sans-serif';
+        ctx.textBaseline = 'middle';
+        chart.getDatasetMeta(0).data.forEach(function (bar, i) {
+          var t = texto(i);
+          if (t) ctx.fillText(t, bar.x + 6, bar.y);
+        });
+        ctx.restore();
+      }
+    };
   }
   function base(stacked, pctAxis) {
     return {
@@ -444,6 +497,55 @@ function pintar(D) {
       options: compOpts
     });
 
+    if (D.mora) {
+      var plural = function (n, uno, varios) { return n + ' ' + (n === 1 ? uno : varios); };
+      var moraOpts = base(false, false);
+      moraOpts.indexAxis = 'y';
+      moraOpts.interaction = { mode: 'nearest', axis: 'y', intersect: false };
+      moraOpts.layout = { padding: { right: 64 } };
+      moraOpts.scales = {
+        x: { min: 0, suggestedMax: Math.max(1, D.kpis.aptosTotal), grid: { color: css('--grid') }, border: { display: false },
+          ticks: { color: css('--muted'), stepSize: 1, precision: 0 } },
+        y: { grid: { display: false }, border: { color: css('--axis') }, ticks: { color: css('--ink-2') } }
+      };
+      moraOpts.plugins.tooltip.callbacks.label = function (c) { return ' ' + plural(c.parsed.x, 'apartamento', 'apartamentos'); };
+      grafico('c-mora', {
+        type: 'bar',
+        data: { labels: tramos, datasets: [{
+          label: 'Apartamentos', data: D.mora.map(function (t) { return t.n; }),
+          backgroundColor: MC.map(css), borderRadius: 4, borderSkipped: 'start', maxBarThickness: 26
+        }] },
+        options: moraOpts,
+        plugins: [etiquetasFin(function (i) { return plural(D.mora[i].n, 'apto', 'aptos'); })]
+      });
+    }
+    if (D.moraAptos) {
+      var aptoOpts = base(false, false);
+      var maxMeses = D.moraAptos.reduce(function (m, a) { return Math.max(m, a.meses); }, 0);
+      aptoOpts.indexAxis = 'y';
+      aptoOpts.interaction = { mode: 'nearest', axis: 'y', intersect: false };
+      aptoOpts.layout = { padding: { right: 70 } };
+      aptoOpts.scales = {
+        x: { min: 0, suggestedMax: Math.max(3, maxMeses), grid: { color: css('--grid') }, border: { display: false },
+          ticks: { color: css('--muted'), stepSize: 1, precision: 0 } },
+        y: { grid: { display: false }, border: { color: css('--axis') }, ticks: { color: css('--ink-2') } }
+      };
+      aptoOpts.plugins.tooltip.callbacks.label = function (c) {
+        var a = D.moraAptos[c.dataIndex];
+        return a.meses ? ' Sin pago: ' + a.lista.join(', ') : ' Al día';
+      };
+      grafico('c-mora-apto', {
+        type: 'bar',
+        data: { labels: D.moraAptos.map(function (a) { return 'Apto ' + a.apto; }), datasets: [{
+          label: 'Meses sin pago', data: D.moraAptos.map(function (a) { return a.meses; }),
+          backgroundColor: D.moraAptos.map(function (a) { return css(MC[a.tramo]); }),
+          borderRadius: 4, borderSkipped: 'start', maxBarThickness: 22, minBarLength: 3
+        }] },
+        options: aptoOpts,
+        plugins: [etiquetasFin(function (i) { var n = D.moraAptos[i].meses; return n ? plural(n, 'mes', 'meses') : 'Al día'; })]
+      });
+    }
+
     var catOpts = base(false, false);
     catOpts.indexAxis = 'y';
     catOpts.interaction = { mode: 'nearest', axis: 'y', intersect: false };
@@ -464,7 +566,7 @@ function pintar(D) {
       options: catOpts
     });
   }
-  try { dibujar(); } catch (e) { ['c-flujo', 'c-saldo', 'c-recaudo', 'c-comp', 'c-cat'].forEach(function (id) { falla(id, e.message || String(e)); }); }
+  try { dibujar(); } catch (e) { ['c-flujo', 'c-saldo', 'c-recaudo', 'c-comp', 'c-cat', 'c-mora', 'c-mora-apto'].forEach(function (id) { falla(id, e.message || String(e)); }); }
   if (window.matchMedia) {
     var mq = window.matchMedia('(prefers-color-scheme: dark)');
     if (mq.addEventListener) mq.addEventListener('change', dibujar);

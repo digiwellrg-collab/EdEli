@@ -77,6 +77,31 @@ function composicionGastos_(meses, etiqueta) {
 }
 
 /**
+ * Months already due (from MES_INICIO) with no payment reported at all for an
+ * apartment: no verified payment, soporte or declared payment. A month paid
+ * for less than the fee is not counted, so the count does not depend on the
+ * fee basis (coefficient vs. flat) still to be settled by the assembly.
+ */
+function mesesSinPago_(c, cfg, hoy, ahora) {
+  return c.celdas.filter(function (x) {
+    return x.mes <= hoy && x.cuota > 0 && vencido_(x.mes, cfg, ahora) &&
+      x.pagado + x.conSoporte + x.declarado <= 0;
+  }).map(function (x) { return x.mes; });
+}
+
+var TRAMOS_MORA = [
+  { hasta: 0, etiqueta: 'Al día' },
+  { hasta: 1, etiqueta: '1 mes' },
+  { hasta: 3, etiqueta: '2 a 3 meses' },
+  { hasta: Infinity, etiqueta: '4 meses o más' }
+];
+
+function tramoMora_(n) {
+  for (var i = 0; i < TRAMOS_MORA.length; i++) if (n <= TRAMOS_MORA[i].hasta) return i;
+  return TRAMOS_MORA.length - 1;
+}
+
+/**
  * Pure: everything the page shows, from calcularFinanzas_(). Only aggregates;
  * no names or per-apartment amounts leave this function.
  */
@@ -153,10 +178,20 @@ function datosDashboard_(f, hoy, ahora) {
         return { categoria: g.categoria, proveedor: g.proveedor, descripcion: g.descripcion, valor: g.valor };
       })
     } : null,
-    aptos: null
+    aptos: null,
+    mora: null,
+    moraAptos: null
   };
 
+  var sinPago = f.cuentas.map(function (c) { return mesesSinPago_(c, cfg, hoy, ahora); });
+  out.mora = TRAMOS_MORA.map(function (t, i) {
+    return { etiqueta: t.etiqueta, n: sinPago.filter(function (l) { return tramoMora_(l.length) === i; }).length };
+  });
+
   if (String(cfg.DASHBOARD_POR_APTO || '').toUpperCase() === 'SI') {
+    out.moraAptos = f.cuentas.map(function (c, i) {
+      return { apto: c.apto, meses: sinPago[i].length, tramo: tramoMora_(sinPago[i].length), lista: sinPago[i].map(etiqueta) };
+    });
     out.aptos = {
       meses: recaudo.map(function (r) { return r.etiqueta; }),
       filas: f.cuentas.map(function (c) {

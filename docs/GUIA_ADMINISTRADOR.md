@@ -128,12 +128,14 @@ Los datos se actualizan solos (máximo cada 10 minutos).
 - **Cambios en la página** (`web/index.html`): se publican copiando el archivo al
   repositorio `edeli-ctg.github.io` (GitHub Pages se actualiza en 1–2 minutos).
 - **Qué muestra:** saldo, recaudo del mes, apartamentos al día (cantidad), cartera total,
-  ingresos y gastos por mes, recaudo por nivel de evidencia y gastos por categoría.
+  ingresos y gastos por mes, recaudo por nivel de evidencia, gastos por categoría y
+  cuántos apartamentos llevan 0, 1, 2–3 o 4+ meses vencidos **sin ningún pago reportado**
+  (un mes pagado por menos de la cuota no cuenta como mes sin pago).
 - **Qué no muestra (privacidad, Ley 1581 de 2012):** nombres, correos, notas, saldos por
   apartamento, la pestaña Banco ni los informes PDF.
 - **Config:** `DASHBOARD_AVISO` = nota arriba de la página (vacío = sin nota).
   `DASHBOARD_POR_APTO` = `SI` muestra el estado de cada apartamento por mes (solo
-  colores, sin valores). Está en `NO` por defecto: aunque no muestre valores, identifica
+  colores, sin valores) y los meses sin pago de cada apartamento. Está en `NO` por defecto: aunque no muestre valores, identifica
   qué apartamento está atrasado. Actívelo solo si la asamblea lo aprueba.
 
 ### Transparencia con los propietarios
