@@ -71,7 +71,7 @@ Los pagos se hacen **en efectivo** a la administración, siempre con recibo firm
 edificio no usa cuenta bancaria).
 
 1. El propietario envía la foto del recibo a **juglic.co@gmail.com** con el asunto
-   `Soporte | Apto 401 | 2026-11 | 100768` (ver [instrucciones para propietarios](INSTRUCCIONES_PROPIETARIOS.md)).
+   `Soporte | Apto 401 | 2026-11 | 100800` (ver [instrucciones para propietarios](INSTRUCCIONES_PROPIETARIOS.md)).
    En máximo una hora aparece una fila en **Pagos**:
    - amarilla `Pendiente verificación`: se leyó todo bien;
    - roja `Revisar`: faltó apartamento, valor o adjunto. Complete los datos a mano.
@@ -110,11 +110,12 @@ el link del comprobante en `Soporte pago`). Solo lo pagado cuenta en el saldo.
   rehacerlo después de corregir datos: **EdEli ▸ Generar informe de un mes**.
 - **EdEli ▸ Enviar informe por correo** lo envía a `DESTINATARIOS_INFORME` (pide confirmación).
 
-### Cuotas en efectivo
-Con pagos en efectivo, **EdEli ▸ Calcular cuotas por coeficiente…** redondea cada cuota al
-$100 más cercano (`REDONDEO_CUOTAS` = 100 en Config). Si algún día se vuelve a pagar por
-transferencia, ponga `REDONDEO_CUOTAS` = `CODIGO`: el último dígito de cada cuota vuelve a
-identificar el apartamento.
+### Cuotas
+**EdEli ▸ Calcular cuotas por coeficiente…** reparte el presupuesto (`CUOTA_BASE` × 9) según el
+coeficiente de cada apartamento y redondea cada cuota **hacia arriba** al siguiente múltiplo de
+$100 (`REDONDEO_CUOTAS` = 100 en Config; 0 = sin redondeo). Con `CUOTA_BASE` = $120.000:
+101 $139.900 · 201 $136.100 · 202 $116.400 · 203 $100.800 · 301 $136.100 · 302 $116.400 ·
+303 $100.800 · 401 $100.800 · 402 $133.200.
 
 ### Panel público (página web)
 Página con las finanzas del edificio que cualquier propietario puede abrir desde el
@@ -163,11 +164,10 @@ carpeta `Informes`. No les dé permiso de edición.
 3. Cada hora, cada soporte `Pendiente verificación` se empareja con un movimiento del
    banco del **mismo valor** y fecha cercana (`DIAS_CONCILIACION`). Si lo encuentra, el pago
    pasa solo a **Verificado** y el movimiento a **Conciliado**.
-4. **Código de pago**: cada apartamento tiene un código del 1 al 9 (columna `Código pago` en
-   Apartamentos) y su cuota termina en ese dígito (101 → $139.861, 201 → $136.082...). Una
-   alerta del banco por el valor exacto de una cuota crea sola el pago `Verificado`, aplicado
-   al mes más antiguo pendiente de ese apartamento. Si después llega el soporte, se adjunta a
-   ese pago (no se duplica).
+4. Una alerta del banco por el valor exacto de una cuota que solo tiene un apartamento crea
+   sola el pago `Verificado`, aplicado al mes más antiguo pendiente de ese apartamento. Si
+   después llega el soporte, se adjunta a ese pago (no se duplica). Cuotas iguales en varios
+   apartamentos (p. ej. 203, 303 y 401) necesitan el soporte para saber de quién es.
 5. Movimientos `Sin soporte` = alguien pagó un valor que no corresponde a ninguna cuota y no envió el correo. Si en Apartamentos llena
    **Nombre en banco** (como aparece en la alerta), el sistema sugiere el apartamento.
 6. Movimientos que no son del edificio: márquelos `No es del edificio`.

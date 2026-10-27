@@ -11,7 +11,7 @@ registra así:
 1. Pague su cuota **en efectivo** a la administración y pida siempre un **recibo de pago
    firmado** (apartamento, mes, valor y fecha).
 2. Envíe **un correo por cada mes pagado** a **juglic.co@gmail.com** con:
-   - **Asunto:** `Soporte | Apto 401 | 2026-11 | 100768`
+   - **Asunto:** `Soporte | Apto 401 | 2026-11 | 100800`
      (su número de apartamento, el mes que paga en formato año-mes, y el valor sin puntos)
    - **Adjunto:** la foto o PDF del recibo.
 3. Listo. El recibo queda archivado y el pago aparece verificado en las cuentas del

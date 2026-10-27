@@ -6,7 +6,7 @@
 function encabezados_(nombre) {
   var h = {};
   h[HOJAS.CONFIG] = ['Clave', 'Valor', 'Descripción'];
-  h[HOJAS.APTOS] = ['Apto', 'Propietario', 'Emails', 'Coeficiente (%)', 'Saldo anterior', 'Activo', 'Nombre en banco', 'Código pago', 'Notas'];
+  h[HOJAS.APTOS] = ['Apto', 'Propietario', 'Emails', 'Coeficiente (%)', 'Saldo anterior', 'Activo', 'Nombre en banco', 'Notas'];
   h[HOJAS.CUOTAS] = ['Apto', 'Desde', 'Cuota mensual', 'Notas'];
   h[HOJAS.PAGOS] = ['Fecha registro', 'Fecha pago', 'Apto', 'Mes aplicado', 'Valor', 'Tipo',
     'Método', 'Soporte', 'Remitente', 'Estado', 'Notas', 'Gmail ID'];
@@ -47,7 +47,7 @@ var CONFIG_INICIAL = [
   ['DIAS_CONCILIACION', 5, 'Días de diferencia máximos entre el soporte y la alerta del banco para emparejarlos.'],
   ['DESTINATARIOS_INFORME', '', 'Correos (separados por coma) que reciben el informe mensual.'],
   ['CARPETA_DRIVE_ID', '', 'Lo llena la configuración inicial: carpeta raíz en Google Drive.'],
-  ['REDONDEO_CUOTAS', 100, 'Las cuotas por coeficiente se redondean a este valor (100 = al $100 más cercano, para pagos en efectivo). CODIGO = el último dígito identifica el apartamento (solo si se paga por transferencia).'],
+  ['REDONDEO_CUOTAS', 100, 'Las cuotas por coeficiente se redondean hacia arriba a este valor (100 = al siguiente múltiplo de $100). 0 = sin redondeo.'],
   ['DASHBOARD_NOTAS', NOTAS_PANEL_DEFECTO, 'Notas al final del panel público, una por línea. Vacío = sin notas.'],
   ['PANEL_URL', 'https://edeli-ctg.github.io/', 'Dirección del panel público para los propietarios.'],
   ['DASHBOARD_AVISO', 'Cuentas en reconstrucción desde octubre de 2025: las cifras son preliminares hasta que se registren todos los pagos y soportes.',
@@ -68,6 +68,11 @@ function configuracionInicial() {
     if (!sh) {
       sh = ss.insertSheet(nombre);
       nuevas[nombre] = true;
+    }
+    // The 1-9 payment code is no longer used: drop its column before rewriting headers.
+    if (nombre === HOJAS.APTOS && sh.getLastColumn() > 0) {
+      var col = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].indexOf('Código pago');
+      if (col >= 0) sh.deleteColumn(col + 1);
     }
     var h = encabezados_(nombre);
     sh.getRange(1, 1, 1, h.length).setValues([h]).setFontWeight('bold').setBackground('#e8eaed');
@@ -232,16 +237,8 @@ function escribirCuotasCoeficiente_(desde) {
   var tablaAptos = leerTabla_(HOJAS.APTOS);
   var filasAptos = tablaAptos.filas.filter(function (f) { return f['Apto'] !== ''; })
     .sort(function (a, b) { return String(a['Apto']) < String(b['Apto']) ? -1 : 1; });
-  // Payment codes 1-9 (last digit of the fee). Missing ones are assigned in apartment order.
-  var colCodigo = tablaAptos.headers.indexOf('Código pago') + 1;
-  if (colCodigo && filasAptos.length <= 9 && filasAptos.some(function (f) { return !f['Código pago']; })) {
-    filasAptos.forEach(function (f, i) {
-      f['Código pago'] = i + 1;
-      tablaAptos.hoja.getRange(f._fila, colCodigo).setValue(i + 1);
-    });
-  }
   var aptos = filasAptos.map(function (f) {
-    return { apto: String(f['Apto']), coef: parseCoef_(f['Coeficiente (%)']), codigo: Number(f['Código pago']) || 0 };
+    return { apto: String(f['Apto']), coef: parseCoef_(f['Coeficiente (%)']) };
   });
   var sinCoef = aptos.filter(function (a) { return !a.coef; }).map(function (a) { return a.apto; });
   if (sinCoef.length) throw new Error('Falta el coeficiente de: ' + sinCoef.join(', ') + ' (hoja Apartamentos).');
@@ -254,10 +251,9 @@ function escribirCuotasCoeficiente_(desde) {
     .sort(function (a, b) { return b - a; })
     .forEach(function (fila) { sh.deleteRow(fila); });
 
-  // REDONDEO_CUOTAS: a step like 100 (cash, the default) or CODIGO (bank transfers, last digit = apartment).
-  var red = cfg.REDONDEO_CUOTAS === undefined ? 100 : String(cfg.REDONDEO_CUOTAS).trim().toUpperCase();
-  var cuotas = calcularCuotas_(base, aptos.sort(function (a, b) { return a.apto < b.apto ? -1 : 1; }),
-    red === 'CODIGO' ? 0 : parseCOP_(red) || 0);
+  // REDONDEO_CUOTAS: fees are rounded up to this step (default 100; 0 = exact).
+  var red = cfg.REDONDEO_CUOTAS === undefined || cfg.REDONDEO_CUOTAS === '' ? 100 : parseCOP_(cfg.REDONDEO_CUOTAS) || 0;
+  var cuotas = calcularCuotas_(base, aptos.sort(function (a, b) { return a.apto < b.apto ? -1 : 1; }), red);
   var inicio = sh.getLastRow() + 1;
   sh.getRange(inicio, 1, cuotas.length, 2).setNumberFormat('@');
   sh.getRange(inicio, 1, cuotas.length, 4).setValues(cuotas.map(function (c) {

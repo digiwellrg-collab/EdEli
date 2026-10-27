@@ -120,7 +120,7 @@ function conciliar_() {
       'Soporte': 'Alerta Bancolombia',
       'Remitente': m['Remitente (banco)'] || '',
       'Estado': ESTADO_PAGO.VERIFICADO,
-      'Notas': NOTA_BANCO + ' (valor termina en el código del apto).'
+      'Notas': NOTA_BANCO + ' (valor igual a la cuota del apto).'
     });
     var fila = hoja_(HOJAS.PAGOS).getLastRow();
     banco.hoja.getRange(m._fila, colB['Estado']).setValue(ESTADO_BANCO.CONCILIADO);

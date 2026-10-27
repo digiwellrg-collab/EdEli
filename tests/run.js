@@ -80,7 +80,7 @@ test('month helpers', () => {
 
 test('fees by coefficient: 120k x 9 x coef', () => {
   const coef = { '101': 12.95, '201': 12.6, '202': 10.77, '203': 9.33, '301': 12.6, '302': 10.77, '303': 9.33, '401': 9.33, '402': 12.33 };
-  const r = ctx.calcularCuotas_(120000, Object.entries(coef).map(([apto, c]) => ({ apto, coef: c })));
+  const r = ctx.calcularCuotas_(120000, Object.entries(coef).map(([apto, c]) => ({ apto, coef: c })), 0);
   const v = Object.fromEntries(r.map((x) => [x.apto, x.valor]));
   assert.strictEqual(v['101'], 139860);
   assert.strictEqual(v['201'], 136080);
@@ -93,19 +93,17 @@ test('fees by coefficient: 120k x 9 x coef', () => {
   assert.strictEqual(ctx.parseCoef_(''), null);
 });
 
-test('payment codes make every fee unique', () => {
+test('coefficient fees rounded up to the next 100', () => {
   const coef = { '101': 12.95, '201': 12.6, '202': 10.77, '203': 9.33, '301': 12.6, '302': 10.77, '303': 9.33, '401': 9.33, '402': 12.33 };
-  const aptos = Object.entries(coef).map(([apto, c], i) => ({ apto, coef: c, codigo: i + 1 }));
+  const aptos = Object.entries(coef).map(([apto, c]) => ({ apto, coef: c }));
   const r = ctx.calcularCuotas_(120000, aptos);
   const v = Object.fromEntries(r.map((x) => [x.apto, x.valor]));
-  assert.strictEqual(JSON.stringify(v), JSON.stringify({ '101': 139861, '201': 136082, '202': 116313, '203': 100764, '301': 136085, '302': 116316, '303': 100767, '401': 100768, '402': 133169 }));
-  assert.strictEqual(new Set(Object.values(v)).size, 9);
-  r.forEach((x, i) => assert.strictEqual(x.valor % 10, i + 1));
-  assert.ok(r[0].nota.endsWith('$139.860 → termina en 1 (código del apto): $139.861'));
+  assert.strictEqual(JSON.stringify(v), JSON.stringify({ '101': 139900, '201': 136100, '202': 116400, '203': 100800, '301': 136100, '302': 116400, '303': 100800, '401': 100800, '402': 133200 }));
+  assert.ok(r[0].nota.endsWith('$139.860 → redondeado hacia arriba a $100: $139.900'));
+  assert.strictEqual(ctx.calcularCuotas_(120000, aptos, 0)[0].valor, 139860); // 0 = exact
   const cuotas = r.map((x) => ({ apto: x.apto, valor: x.valor }));
-  assert.strictEqual(ctx.aptoPorValor_(100767, cuotas), '303');
-  assert.strictEqual(ctx.aptoPorValor_(100764, cuotas), '203');
-  assert.strictEqual(ctx.aptoPorValor_(100000, cuotas), '');
+  assert.strictEqual(ctx.aptoPorValor_(139900, cuotas), '101'); // unique fee
+  assert.strictEqual(ctx.aptoPorValor_(100800, cuotas), '');     // shared by 203, 303, 401
 });
 
 test('bank deposit goes to the oldest unpaid month', () => {
@@ -387,14 +385,7 @@ test('payments toward the balance owed before MES_INICIO', () => {
   tablas.Apartamentos[1]['Saldo anterior'] = 50000;
 });
 
-test('fees rounded to 100 for cash payments; dashboard notes from Config', () => {
-  const coef = { 101: 12.95, 202: 10.77, 402: 12.33 };
-  const aptos = Object.entries(coef).map(([apto, c], i) => ({ apto, coef: c, codigo: i + 1 }));
-  const r = ctx.calcularCuotas_(120000, aptos, 100);
-  // 360.000 x 12,95% = 46.620 -> 46.600 (codes ignored when rounding)
-  assert.strictEqual(r[0].valor, 46600);
-  assert.ok(r.every((c) => c.valor % 100 === 0));
-  assert.strictEqual(ctx.calcularCuotas_(120000, aptos)[0].valor % 10, 1); // no step: codes as before
+test('dashboard notes from Config', () => {
   assert.ok(ctx.CONFIG_INICIAL.some((c) => c[0] === 'DASHBOARD_NOTAS' && String(c[1]).indexOf('Aseo') === 0));
   ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5, DASHBOARD_NOTAS: 'Uno\nDos | Tres' });
   assert.strictEqual(JSON.stringify(ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-20')).notas), JSON.stringify(['Uno', 'Dos', 'Tres']));
