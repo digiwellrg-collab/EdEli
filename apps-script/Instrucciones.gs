@@ -42,37 +42,34 @@ function actualizarInstrucciones() {
     ? 'Si el pago no está completo en la fecha límite, se cobra ' + recargo + ' en la cuota del mes siguiente.'
     : 'Sin recargo por ahora.');
 
-  seccion('2. Pagar por transferencia (recomendado)');
-  linea('Cuenta', String(cfg.CUENTA_PAGO || ''));
-  linea('Valor exacto', 'Transfiera el valor EXACTO de su cuota (tabla abajo), sin redondear: el último dígito identifica su apartamento. Una transferencia por mes.');
-  linea('Descripción', 'En la descripción o referencia de la transferencia escriba: Apto ### AAAA-MM  (ej.: Apto 401 ' + mes + ')');
-  linea('Soporte', 'No necesita enviar soporte: el sistema reconoce la transferencia y registra el pago solo.');
-  linea('Otro valor', 'Si transfiere un valor distinto a su cuota (por ejemplo, dos meses juntos), envíe el soporte como en el punto 3 para poder aplicarlo.');
+  seccion('2. Cómo pagar (en efectivo)');
+  linea('Pago', 'Entregue el valor de su cuota en efectivo a la administración.');
+  linea('Recibo', 'Pida siempre un recibo de pago firmado, con apartamento, mes, valor y fecha.');
+  if (cfg.CUENTA_PAGO && !/_{2,}/.test(String(cfg.CUENTA_PAGO))) linea('Otra opción', String(cfg.CUENTA_PAGO));
 
-  seccion('3. Pagar en efectivo (soporte obligatorio)');
-  linea('Recibo', 'Entregue el dinero a la administración y pida un recibo firmado.');
+  seccion('3. Enviar el recibo (obligatorio)');
   linea('Para', String(cfg.EMAIL_SOPORTES || ''));
   linea('Asunto', 'Soporte | Apto ### | AAAA-MM | valor   (valor sin puntos ni signo $)');
   linea('Adjunto', 'Foto o PDF del recibo firmado.');
   linea('Importante', 'Un correo por cada mes pagado. Si paga dos meses, envíe dos correos (puede adjuntar el mismo recibo).');
 
   seccion('Su cuota de ' + nombreMes_(mes));
-  encabezado('Apto', 'Valor exacto a transferir', 'Asunto del correo (solo efectivo u otro valor)');
+  encabezado('Apto', 'Cuota del mes', 'Asunto del correo');
   cuotas.forEach(function (c) {
     linea(c.apto, c.valor ? formatoCOP_(c.valor) : 'por definir', 'Soporte | Apto ' + c.apto + ' | ' + mes + ' | ' + (c.valor || 'valor'));
   });
 
   seccion('4. Qué pasa después');
-  linea('1', 'Transferencia: en máximo una hora el pago queda Verificado (verde).');
-  linea('2', 'Efectivo: el recibo queda archivado y la administración lo verifica.');
-  linea('3', 'Puede ver su estado en la pestaña "Estado de cuenta": verde = pagado, azul = soporte por verificar, amarillo = parcial, rojo = pendiente. Pase el cursor sobre un mes para ver el detalle.');
+  linea('1', 'El sistema lee su correo (cada hora), guarda el recibo en la carpeta del edificio y registra el pago como "por verificar".');
+  linea('2', 'Al revisar el recibo, el pago queda Verificado.');
+  linea('3', 'Puede ver el estado de las cuentas del edificio en el panel público y en la pestaña "Estado de cuenta".');
   linea('4', 'Cada mes se publica el informe con ingresos, gastos y saldo del edificio.');
 
   seccion('Para el administrador');
-  linea('Diario', 'Nada: correos, soportes, facturas y alertas del banco se procesan solos cada hora.');
+  linea('Diario', 'Nada: los correos con recibos y las facturas de servicios se procesan solos cada hora.');
   linea('Revisar', 'Pagos en rojo ("Revisar"): faltó apartamento, mes, valor o adjunto. Complételos a mano.');
-  linea('Banco', 'Pestaña Banco: "Sin soporte" = llegó un valor que no es una cuota exacta. Cree el pago o pídale el soporte.');
-  linea('Efectivo', 'Pagos con Método Efectivo o soporte de recibo: revise el recibo firmado y cambie el estado a Verificado.');
+  linea('Recibos', 'Pagos "Pendiente verificación": revise el recibo firmado (columna Soporte), ponga Método = Efectivo y cambie el estado a Verificado.');
+  linea('Sin correo', 'Si alguien pagó y no envió el recibo: agregue la fila en Pagos a mano, con la foto del recibo en Soporte.');
   linea('Gastos', 'Al pagar una factura: ponga Fecha pago y cambie el estado a Pagado.');
   linea('Día 1', 'Se registra el aseo y se genera el informe PDF del mes anterior (carpeta Informes en Drive).');
 

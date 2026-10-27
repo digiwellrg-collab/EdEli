@@ -6,9 +6,8 @@ mes a mes, desde octubre de 2025.
 
 Funciona con una **Google Sheet + Google Apps Script**: no requiere servidor ni pagos.
 
-- Los propietarios transfieren el valor exacto de su cuota; la alerta de Bancolombia
-  registra el pago solo. Solo los pagos en efectivo (o por otro valor) requieren enviar
-  el soporte por correo, que el script guarda en Google Drive y registra en la hoja.
+- Los propietarios pagan en efectivo con recibo firmado y envían la foto del recibo por
+  correo; el script lo guarda en Google Drive y lo registra en la hoja para verificación.
 - Las facturas de Afinia y Acuacar que llegan por correo se archivan y registran solas.
 - El aseo se registra cada mes; las reparaciones se agregan a mano.
 - Cada mes se genera un informe PDF con el resumen, el detalle y el estado de cuenta
