@@ -17,6 +17,12 @@ function encabezados_(nombre) {
   return h[nombre];
 }
 
+var NOTAS_PANEL_DEFECTO =
+  'Aseo: se asume un pago de $170.000 cada mes desde enero de 2026. La administración no ha confirmado estos pagos mes a mes; ' +
+  'en su presentación de abril de 2026 reportó un pago de aseo de $175.000 entre febrero y abril.\n' +
+  'Pagos: los meses pagados se basan en la relación de pagos de la administración (octubre de 2026) y en los recibos disponibles. ' +
+  'Los pagos sin recibo aparecen como "según lo reportado".';
+
 var CONFIG_INICIAL = [
   ['NOMBRE_EDIFICIO', 'Edificio Elizabeth', 'Nombre que aparece en los informes.'],
   ['EMAIL_SOPORTES', 'juglic.co@gmail.com', 'Correo al que los propietarios envían los soportes de pago.'],
@@ -39,6 +45,8 @@ var CONFIG_INICIAL = [
   ['DIAS_CONCILIACION', 5, 'Días de diferencia máximos entre el soporte y la alerta del banco para emparejarlos.'],
   ['DESTINATARIOS_INFORME', '', 'Correos (separados por coma) que reciben el informe mensual.'],
   ['CARPETA_DRIVE_ID', '', 'Lo llena la configuración inicial: carpeta raíz en Google Drive.'],
+  ['REDONDEO_CUOTAS', 100, 'Las cuotas por coeficiente se redondean a este valor (100 = al $100 más cercano, para pagos en efectivo). CODIGO = el último dígito identifica el apartamento (solo si se paga por transferencia).'],
+  ['DASHBOARD_NOTAS', NOTAS_PANEL_DEFECTO, 'Notas al final del panel público, una por línea. Vacío = sin notas.'],
   ['PANEL_URL', 'https://edeli-ctg.github.io/', 'Dirección del panel público para los propietarios.'],
   ['DASHBOARD_AVISO', 'Cuentas en reconstrucción desde octubre de 2025: las cifras son preliminares hasta que se registren todos los pagos y soportes.',
     'Nota que aparece arriba en el panel público. Vacío = sin nota.'],
@@ -244,7 +252,10 @@ function escribirCuotasCoeficiente_(desde) {
     .sort(function (a, b) { return b - a; })
     .forEach(function (fila) { sh.deleteRow(fila); });
 
-  var cuotas = calcularCuotas_(base, aptos.sort(function (a, b) { return a.apto < b.apto ? -1 : 1; }));
+  // REDONDEO_CUOTAS: a step like 100 (cash, the default) or CODIGO (bank transfers, last digit = apartment).
+  var red = cfg.REDONDEO_CUOTAS === undefined ? 100 : String(cfg.REDONDEO_CUOTAS).trim().toUpperCase();
+  var cuotas = calcularCuotas_(base, aptos.sort(function (a, b) { return a.apto < b.apto ? -1 : 1; }),
+    red === 'CODIGO' ? 0 : parseCOP_(red) || 0);
   var inicio = sh.getLastRow() + 1;
   sh.getRange(inicio, 1, cuotas.length, 2).setNumberFormat('@');
   sh.getRange(inicio, 1, cuotas.length, 4).setValues(cuotas.map(function (c) {

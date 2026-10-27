@@ -128,6 +128,8 @@
     .aptos td.cuenta { font-size: 11px; padding-left: 4px; }
   }
   .aptos td:first-child, .aptos th:first-child { text-align: left; font-weight: 600; }
+  .notas { margin: 8px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; }
+  .notas li { margin: 6px 0; }
   footer { margin-top: 28px; font-size: 12.5px; color: var(--muted); }
   footer p { margin: 4px 0; }
 </style>
@@ -253,6 +255,11 @@
     <div class="scroll" id="t-aptos"></div>
   </section>
 
+  <section class="card full" id="s-notas" hidden>
+    <h2>Notas sobre las cifras</h2>
+    <ul class="notas" id="l-notas"></ul>
+  </section>
+
   <footer>
     <p><b>Privacidad.</b> Esta página muestra solo cifras globales del edificio. No publica nombres,
       datos de contacto, saldos individuales ni información bancaria (Ley 1581 de 2012).
@@ -348,6 +355,11 @@ function pintar(D) {
   if (D.mora) {
     $('s-mora').hidden = false;
     $('mora-card').style.gridColumn = '1 / -1';
+  }
+
+  if (D.notas && D.notas.length) {
+    $('s-notas').hidden = false;
+    $('l-notas').innerHTML = D.notas.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
   }
 
   if (D.gastosMes && D.gastosMes.filas.length) {

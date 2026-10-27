@@ -188,7 +188,9 @@ function datosDashboard_(f, hoy, ahora) {
       })
     } : null,
     aptos: null,
-    mora: null
+    mora: null,
+    notas: String(cfg.DASHBOARD_NOTAS === undefined ? NOTAS_PANEL_DEFECTO : cfg.DASHBOARD_NOTAS || '')
+      .split(/\r?\n|\s\|\s/).map(function (t) { return t.trim(); }).filter(String)
   };
 
   var sinPago = f.cuentas.map(function (c) { return mesesSinPago_(c, cfg, hoy, ahora); });

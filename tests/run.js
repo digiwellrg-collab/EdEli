@@ -387,6 +387,21 @@ test('payments toward the balance owed before MES_INICIO', () => {
   tablas.Apartamentos[1]['Saldo anterior'] = 50000;
 });
 
+test('fees rounded to 100 for cash payments; dashboard notes from Config', () => {
+  const coef = { 101: 12.95, 202: 10.77, 402: 12.33 };
+  const aptos = Object.entries(coef).map(([apto, c], i) => ({ apto, coef: c, codigo: i + 1 }));
+  const r = ctx.calcularCuotas_(120000, aptos, 100);
+  // 360.000 x 12,95% = 46.620 -> 46.600 (codes ignored when rounding)
+  assert.strictEqual(r[0].valor, 46600);
+  assert.ok(r.every((c) => c.valor % 100 === 0));
+  assert.strictEqual(ctx.calcularCuotas_(120000, aptos)[0].valor % 10, 1); // no step: codes as before
+  assert.ok(ctx.CONFIG_INICIAL.some((c) => c[0] === 'DASHBOARD_NOTAS' && String(c[1]).indexOf('Aseo') === 0));
+  ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5, DASHBOARD_NOTAS: 'Uno\nDos | Tres' });
+  assert.strictEqual(JSON.stringify(ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-20')).notas), JSON.stringify(['Uno', 'Dos', 'Tres']));
+  ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
+  assert.strictEqual(ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-20')).notas.length, 2);
+});
+
 test('captura grid becomes payments, credits and notes', () => {
   ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
   const f = ctx.calcularFinanzas_('2025-12');

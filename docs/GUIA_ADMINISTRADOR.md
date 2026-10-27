@@ -110,6 +110,12 @@ el link del comprobante en `Soporte pago`). Solo lo pagado cuenta en el saldo.
   rehacerlo después de corregir datos: **EdEli ▸ Generar informe de un mes**.
 - **EdEli ▸ Enviar informe por correo** lo envía a `DESTINATARIOS_INFORME` (pide confirmación).
 
+### Cuotas en efectivo
+Con pagos en efectivo, **EdEli ▸ Calcular cuotas por coeficiente…** redondea cada cuota al
+$100 más cercano (`REDONDEO_CUOTAS` = 100 en Config). Si algún día se vuelve a pagar por
+transferencia, ponga `REDONDEO_CUOTAS` = `CODIGO`: el último dígito de cada cuota vuelve a
+identificar el apartamento.
+
 ### Panel público (página web)
 Página con las finanzas del edificio que cualquier propietario puede abrir desde el
 celular, sin cuenta ni contraseña: **https://edeli-ctg.github.io/**
@@ -135,6 +141,8 @@ Los datos se actualizan solos (máximo cada 10 minutos).
 - **Qué no muestra (privacidad, Ley 1581 de 2012):** nombres, correos, notas, saldos por
   apartamento, la pestaña Banco ni los informes PDF.
 - **Config:** `DASHBOARD_AVISO` = nota arriba de la página (vacío = sin nota).
+  `DASHBOARD_NOTAS` = notas al final de la página ("Notas sobre las cifras"), una por línea:
+  ahí se explican los supuestos (por ejemplo, el aseo).
   `DASHBOARD_POR_APTO` = `SI` muestra el estado de cada apartamento por mes (solo
   colores, sin valores) y los meses sin pago de cada apartamento. Está en `NO` por defecto: aunque no muestre valores, identifica
   qué apartamento está atrasado. Actívelo solo si la asamblea lo aprueba.

@@ -131,22 +131,26 @@ function aFecha_(v) {
 /**
  * Fees by coefficient (Reglamento art. 19.11): the monthly budget is
  * base x number of apartments, split by each apartment's coefficient (%).
- * aptos: [{apto, coef, codigo}] with coef like 12.95. When an apartment has a
- * payment code (1-9), its fee's last digit is replaced by that code so a bank
+ * aptos: [{apto, coef, codigo}] with coef like 12.95. redondeo: a number
+ * (e.g. 100) rounds each fee to that step, for cash payments. Without it, an
+ * apartment's payment code (1-9) replaces the fee's last digit so a bank
  * deposit identifies the apartment by amount alone. Returns [{apto, valor, nota}].
  */
-function calcularCuotas_(base, aptos) {
+function calcularCuotas_(base, aptos, redondeo) {
   var n = aptos.length;
   var presupuesto = base * n;
   return aptos.map(function (a) {
     var exacto = Math.round(presupuesto * a.coef / 100);
-    var valor = a.codigo ? Math.floor(exacto / 10) * 10 + Number(a.codigo) : exacto;
+    var paso = Number(redondeo) > 0 ? Number(redondeo) : 0;
+    var valor = paso ? Math.round(exacto / paso) * paso
+      : a.codigo ? Math.floor(exacto / 10) * 10 + Number(a.codigo) : exacto;
+    var detalle = paso ? (valor !== exacto ? ' → redondeado a ' + formatoCOP_(paso) + ': ' + formatoCOP_(valor) : '')
+      : a.codigo ? ' → termina en ' + a.codigo + ' (código del apto): ' + formatoCOP_(valor) : '';
     return {
       apto: a.apto,
       valor: valor,
       nota: formatoCOP_(base) + ' × ' + n + ' = ' + formatoCOP_(presupuesto) + ' × ' +
-        String(a.coef).replace('.', ',') + '% = ' + formatoCOP_(exacto) +
-        (a.codigo ? ' → termina en ' + a.codigo + ' (código del apto): ' + formatoCOP_(valor) : '')
+        String(a.coef).replace('.', ',') + '% = ' + formatoCOP_(exacto) + detalle
     };
   });
 }

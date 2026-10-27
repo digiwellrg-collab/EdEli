@@ -9,3 +9,5 @@ Se importan con Archivo ▸ Importar ▸ Subir ▸ **Agregar a la hoja actual**,
 | `gastos_admin_feb_abr_2026.csv` | Gastos | Extintor, candado y copia de llave (feb–abr 2026, según la misma presentación). |
 | `pagos_solo_nuevas_filas.csv` | Pagos | Solo las 20 filas agregadas el 7-oct-2026 (301, 303, 401 y abonos a saldo anterior). Úselo si ya importó la primera versión de `pagos_declarados_admin.csv` (33 filas), para no duplicar. |
 | `pagos_301_correccion.csv` | Pagos | Corrección del 301 (oct, nov, dic 2025 y feb 2026 pagados; ene 2026 no). Úselo solo si ya había importado las filas del 301 tipo "Abono a saldo anterior": bórrelas primero. |
+| `pagos_401_abr_ago_2026.csv` | Pagos | 401: abr–ago 2026 pagados en efectivo por Rodrigo y Stella (la relación de la administración los muestra pagados). |
+| `gastos_oct2026.csv` | Gastos | Octubre 2026: Afinia $67.300 pagado; Acuacar $336.765 por pagar. |
