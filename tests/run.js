@@ -399,7 +399,7 @@ test('fees rounded to 100 for cash payments; dashboard notes from Config', () =>
   ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5, DASHBOARD_NOTAS: 'Uno\nDos | Tres' });
   assert.strictEqual(JSON.stringify(ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-20')).notas), JSON.stringify(['Uno', 'Dos', 'Tres']));
   ctx.getConfig_ = () => ({ MES_INICIO: '2025-10', SALDO_INICIAL: 0, DIAS_ANTES_FIN_MES: 5 });
-  assert.strictEqual(ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-20')).notas.length, 2);
+  assert.strictEqual(ctx.datosDashboard_(ctx.calcularFinanzas_('2025-12'), '2025-12', d('2025-12-20')).notas.length, 3);
 });
 
 test('captura grid becomes payments, credits and notes', () => {

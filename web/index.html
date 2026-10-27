@@ -162,13 +162,13 @@
       <p class="label">Apartamentos al día</p>
       <p class="mid" id="k-aldia"></p>
       <div class="dots" id="k-dots" role="img"></div>
-      <p class="note">Sin cuotas vencidas pendientes (solo pagos verificados).</p>
+      <p class="note">Sin cuotas pendientes (solo pagos verificados).</p>
     </div>
   </section>
 
   <section class="grid kpis2">
     <div class="card">
-      <p class="label">Cuotas vencidas por cobrar</p>
+      <p class="label">Cuotas pendientes por cobrar</p>
       <p class="mid" id="k-cartera"></p>
       <p class="note">Total del edificio, sin detalle por apartamento.</p>
     </div>
@@ -207,7 +207,7 @@
         <span><i style="background:var(--ok)"></i>✅ Verificado</span>
         <span><i style="background:var(--sop)"></i>📎 Soporte por verificar</span>
         <span><i style="background:var(--dec)"></i>🗣 Declarado sin soporte</span>
-        <span><i style="background:var(--track)"></i>Sin pago</span>
+        <span><i style="background:var(--track)"></i>Pendiente</span>
       </div>
       <div class="canvas"><canvas id="c-recaudo" aria-label="Recaudo de cuotas por mes"></canvas></div>
       <details><summary>Ver tabla</summary><div class="scroll" id="t-recaudo"></div></details>
@@ -221,10 +221,10 @@
 
   <section class="grid two" id="s-mora" hidden>
     <div class="card" id="mora-card">
-      <h2>¿Cuántos apartamentos están atrasados?</h2>
-      <p class="chart-sub">Apartamentos según los meses vencidos sin ningún pago reportado, desde octubre de 2025.</p>
-      <div class="canvas"><canvas id="c-mora" aria-label="Apartamentos según meses sin pago"></canvas></div>
-      <p class="note">Un mes pagado por menos de la cuota no se cuenta como mes sin pago.</p>
+      <h2>¿Cuántos apartamentos tienen meses pendientes?</h2>
+      <p class="chart-sub">Apartamentos según los meses pendientes de pago (sin ningún pago reportado), desde octubre de 2025.</p>
+      <div class="canvas"><canvas id="c-mora" aria-label="Apartamentos según meses pendientes"></canvas></div>
+      <p class="note">Un mes pagado por menos de la cuota no se cuenta como pendiente.</p>
     </div>
   </section>
 
@@ -249,7 +249,7 @@
       <span><b class="dot ok"></b>Pagado y verificado</span>
       <span><b class="dot soporte"></b>Pagado, con soporte por verificar</span>
       <span><b class="dot declarado"></b>Pagado según lo reportado, sin soporte</span>
-      <span><b class="dot pendiente"></b>Vencido sin pago</span>
+      <span><b class="dot pendiente"></b>Pendiente de pago</span>
       <span><b class="dot futuro"></b>Aún no vence</span>
     </div>
     <div class="scroll" id="t-aptos"></div>
@@ -323,7 +323,7 @@ function pintar(D) {
   $('t-flujo').innerHTML = tabla(['Mes', 'Ingresos', 'Gastos', 'Saldo'],
     D.flujo.map(function (m) { return [m.etiqueta, m.ingresos, m.gastos, m.saldo]; }), [0, 1, 1, 1]);
   $('t-recaudo').innerHTML = (function () {
-    var h = '<table><thead><tr><th>Mes</th><th class="n">Cuotas</th><th class="n">✅</th><th class="n">📎</th><th class="n">🗣</th><th class="n">Sin pago</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>Mes</th><th class="n">Cuotas</th><th class="n">✅</th><th class="n">📎</th><th class="n">🗣</th><th class="n">Pendiente</th></tr></thead><tbody>';
     D.recaudo.forEach(function (r) {
       h += '<tr><td>' + esc(r.etiqueta) + '</td>' + [r.esperado, r.verificado, r.soporte, r.declarado, r.pendiente]
         .map(function (v) { return '<td class="n">' + COP.format(v) + '</td>'; }).join('') + '</tr>';
@@ -373,7 +373,7 @@ function pintar(D) {
   if (D.aptos) {
     $('s-aptos').hidden = false;
     var nombres = { ok: 'pagado y verificado', soporte: 'pagado, soporte por verificar', declarado: 'pagado según lo reportado (sin soporte)',
-      pendiente: 'vencido sin pago', futuro: 'aún no vence' };
+      pendiente: 'pendiente de pago', futuro: 'aún no vence' };
     var h = '<table class="aptos"><thead><tr><th>Apto</th>' + D.aptos.meses.map(function (m) { return '<th>' + esc(m) + '</th>'; }).join('') +
       '<th class="n">Pagados</th></tr></thead><tbody>';
     D.aptos.filas.forEach(function (f) {
@@ -482,7 +482,7 @@ function pintar(D) {
         Object.assign({ label: '✅ Verificado', data: rp('verificado'), backgroundColor: css('--ok') }, seg),
         Object.assign({ label: '📎 Soporte', data: rp('soporte'), backgroundColor: css('--sop') }, seg),
         Object.assign({ label: '🗣 Declarado', data: rp('declarado'), backgroundColor: css('--dec') }, seg),
-        Object.assign({ label: 'Sin pago', data: rp('pendiente'), backgroundColor: css('--track') }, seg)
+        Object.assign({ label: 'Pendiente', data: rp('pendiente'), backgroundColor: css('--track') }, seg)
       ] },
       options: base(true, true)
     });

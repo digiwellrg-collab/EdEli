@@ -21,7 +21,9 @@ var NOTAS_PANEL_DEFECTO =
   'Aseo: se asume un pago de $170.000 cada mes desde enero de 2026. La administración no ha confirmado estos pagos mes a mes; ' +
   'en su presentación de abril de 2026 reportó un pago de aseo de $175.000 entre febrero y abril.\n' +
   'Pagos: los meses pagados se basan en la relación de pagos de la administración (octubre de 2026) y en los recibos disponibles. ' +
-  'Los pagos sin recibo aparecen como "según lo reportado".';
+  'Los pagos sin recibo aparecen como "según lo reportado".\n' +
+  'Agua (Acuacar) de septiembre de 2026 ($336.792): la pagó directamente el apartamento 303. Se registra como abono a sus ' +
+  'cuotas pendientes y no como salida de la caja del edificio.';
 
 var CONFIG_INICIAL = [
   ['NOMBRE_EDIFICIO', 'Edificio Elizabeth', 'Nombre que aparece en los informes.'],

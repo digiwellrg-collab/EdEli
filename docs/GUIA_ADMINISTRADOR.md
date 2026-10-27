@@ -136,8 +136,9 @@ Los datos se actualizan solos (máximo cada 10 minutos).
   repositorio `edeli-ctg.github.io` (GitHub Pages se actualiza en 1–2 minutos).
 - **Qué muestra:** saldo, recaudo del mes, apartamentos al día (cantidad), cartera total,
   ingresos y gastos por mes, recaudo por nivel de evidencia, gastos por categoría y
-  cuántos apartamentos llevan 0, 1, 2–3 o 4+ meses vencidos **sin ningún pago reportado**
-  (un mes pagado por menos de la cuota no cuenta como mes sin pago).
+  cuántos apartamentos tienen 0, 1, 2–3 o 4+ meses **pendientes** (sin ningún pago reportado;
+  un mes pagado por menos de la cuota no cuenta como pendiente). Se dice "pendiente", no
+  "atrasado": sin recibo de caja del edificio no se puede afirmar que alguien esté en mora.
 - **Qué no muestra (privacidad, Ley 1581 de 2012):** nombres, correos, notas, saldos por
   apartamento, la pestaña Banco ni los informes PDF.
 - **Config:** `DASHBOARD_AVISO` = nota arriba de la página (vacío = sin nota).

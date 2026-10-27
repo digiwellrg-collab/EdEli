@@ -11,3 +11,4 @@ Se importan con Archivo ▸ Importar ▸ Subir ▸ **Agregar a la hoja actual**,
 | `pagos_301_correccion.csv` | Pagos | Corrección del 301 (oct, nov, dic 2025 y feb 2026 pagados; ene 2026 no). Úselo solo si ya había importado las filas del 301 tipo "Abono a saldo anterior": bórrelas primero. |
 | `pagos_401_abr_ago_2026.csv` | Pagos | 401: abr–ago 2026 pagados en efectivo por Rodrigo y Stella (la relación de la administración los muestra pagados). |
 | `gastos_oct2026.csv` | Gastos | Octubre 2026: Afinia $67.300 pagado; Acuacar $336.765 por pagar. |
+| `pagos_303_credito_acuacar_sep2026.csv` | Pagos | El 303 pagó directamente la factura de Acuacar de sep-2026 ($336.792): crédito a sus cuotas pendientes (mar, abr, may y parte de jun 2026). La factura sigue en Gastos como gasto del edificio; el crédito cuenta como ingreso, así que el saldo del edificio no baja por ella. |
