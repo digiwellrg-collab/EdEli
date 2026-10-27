@@ -130,6 +130,9 @@
   .aptos td:first-child, .aptos th:first-child { text-align: left; font-weight: 600; }
   .notas { margin: 8px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; }
   .notas li { margin: 6px 0; }
+  .notas li:target { background: var(--notice); border-radius: 6px; }
+  .fn { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
+  a.ref { color: var(--s1); text-decoration: none; font-weight: 700; padding: 0 1px; }
   footer { margin-top: 28px; font-size: 12.5px; color: var(--muted); }
   footer p { margin: 4px 0; }
 </style>
@@ -150,7 +153,7 @@
     <div class="card">
       <p class="label">Saldo del edificio hoy</p>
       <p class="big" id="k-saldo"></p>
-      <p class="note">Dinero disponible según ingresos y gastos verificados.</p>
+      <p class="note">Dinero disponible según ingresos y gastos verificados. Incluye supuestos: ver notas <a class="ref" href="#nota-1">¹</a> <a class="ref" href="#nota-2">²</a>.</p>
     </div>
     <div class="card">
       <p class="label" id="k-mes-label">Recaudo del mes</p>
@@ -190,12 +193,14 @@
       <p class="chart-sub">Movimientos verificados, en el mes en que ocurrieron.</p>
       <div class="legend"><span><i style="background:var(--s1)"></i>Ingresos</span><span><i style="background:var(--s2)"></i>Gastos</span></div>
       <div class="canvas"><canvas id="c-flujo" aria-label="Ingresos y gastos por mes"></canvas></div>
+      <p class="fn"><a class="ref" href="#nota-1">¹</a> El aseo es un valor asumido. <a class="ref" href="#nota-2">²</a> El agua de septiembre de 2026 la pagó el apartamento 303.</p>
       <details><summary>Ver tabla</summary><div class="scroll" id="t-flujo"></div></details>
     </div>
     <div class="card">
       <h2>Saldo del edificio</h2>
       <p class="chart-sub">Al cierre de cada mes.</p>
       <div class="canvas"><canvas id="c-saldo" aria-label="Saldo del edificio al cierre de cada mes"></canvas></div>
+      <p class="fn">Incluye el aseo asumido <a class="ref" href="#nota-1">¹</a> y el agua de septiembre pagada por el apartamento 303 <a class="ref" href="#nota-2">²</a>.</p>
     </div>
   </section>
 
@@ -210,19 +215,21 @@
         <span><i style="background:var(--track)"></i>Pendiente</span>
       </div>
       <div class="canvas"><canvas id="c-recaudo" aria-label="Recaudo de cuotas por mes"></canvas></div>
+      <p class="fn"><a class="ref" href="#nota-3">³</a> Según la relación de pagos de la administración y los recibos disponibles.</p>
       <details><summary>Ver tabla</summary><div class="scroll" id="t-recaudo"></div></details>
     </div>
     <div class="card">
       <h2>¿En qué se gasta?</h2>
       <p class="chart-sub">Gastos pagados en los últimos 12 meses, por categoría.</p>
       <div class="canvas"><canvas id="c-cat" aria-label="Gastos por categoría"></canvas></div>
+      <p class="fn"><a class="ref" href="#nota-1">¹</a> El aseo es un valor asumido de $170.000 al mes.</p>
     </div>
   </section>
 
   <section class="grid two" id="s-mora" hidden>
     <div class="card" id="mora-card">
       <h2>¿Cuántos apartamentos tienen meses pendientes?</h2>
-      <p class="chart-sub">Apartamentos según los meses pendientes de pago (sin ningún pago reportado), desde octubre de 2025.</p>
+      <p class="chart-sub">Apartamentos según los meses pendientes de pago (sin ningún pago reportado <a class="ref" href="#nota-3">³</a>), desde octubre de 2025.</p>
       <div class="canvas"><canvas id="c-mora" aria-label="Apartamentos según meses pendientes"></canvas></div>
       <p class="note">Un mes pagado por menos de la cuota no se cuenta como pendiente.</p>
     </div>
@@ -233,6 +240,7 @@
     <p class="chart-sub">Qué porcentaje del gasto de cada mes fue a cada categoría (gastos pagados).</p>
     <div class="legend" id="l-comp"></div>
     <div class="canvas tall"><canvas id="c-comp" aria-label="Composición del gasto por mes"></canvas></div>
+    <p class="fn"><a class="ref" href="#nota-1">¹</a> El aseo es un valor asumido de $170.000 al mes.</p>
     <details><summary>Ver tabla</summary><div class="scroll" id="t-comp"></div></details>
   </section>
 
@@ -244,7 +252,7 @@
 
   <section class="card full" id="s-aptos" hidden>
     <h2>Pagos por apartamento · últimos 12 meses</h2>
-    <p class="chart-sub">Punto lleno = mes con pago reportado (de cualquier valor). Pase el cursor sobre un punto para ver el detalle.</p>
+    <p class="chart-sub">Punto lleno = mes con pago reportado (de cualquier valor) <a class="ref" href="#nota-3">³</a>. Pase el cursor sobre un punto para ver el detalle.</p>
     <div class="legend">
       <span><b class="dot ok"></b>Pagado y verificado</span>
       <span><b class="dot soporte"></b>Pagado, con soporte por verificar</span>
@@ -255,9 +263,9 @@
     <div class="scroll" id="t-aptos"></div>
   </section>
 
-  <section class="card full" id="s-notas" hidden>
+  <section class="card full" id="s-notas">
     <h2>Notas sobre las cifras</h2>
-    <ul class="notas" id="l-notas"></ul>
+    <ol class="notas" id="l-notas"></ol>
   </section>
 
   <footer>
@@ -357,10 +365,17 @@ function pintar(D) {
     $('mora-card').style.gridColumn = '1 / -1';
   }
 
-  if (D.notas && D.notas.length) {
-    $('s-notas').hidden = false;
-    $('l-notas').innerHTML = D.notas.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
-  }
+  // Footnotes ¹ ² ³ on the page are these, in this order. Extra notes from Config (DASHBOARD_NOTAS) follow.
+  var NOTAS = [
+    'Aseo: se asume un pago de $170.000 cada mes desde enero de 2026. La administración no ha confirmado estos pagos mes a mes; ' +
+      'en su presentación de abril de 2026 reportó un pago de aseo de $175.000 entre febrero y abril.',
+    'Agua (Acuacar) de septiembre de 2026 ($336.792): la pagó directamente el apartamento 303. Se registra como abono a sus ' +
+      'cuotas pendientes y no como salida de la caja del edificio.',
+    'Pagos: los meses pagados se basan en la relación de pagos de la administración (octubre de 2026) y en los recibos disponibles. ' +
+      'Los pagos sin recibo aparecen como "según lo reportado".'
+  ];
+  $('l-notas').innerHTML = NOTAS.concat((D.notas || []).filter(function (t) { return NOTAS.indexOf(t) < 0; }))
+    .map(function (t, i) { return '<li id="nota-' + (i + 1) + '">' + esc(t) + '</li>'; }).join('');
 
   if (D.gastosMes && D.gastosMes.filas.length) {
     $('s-gastos').hidden = false;
